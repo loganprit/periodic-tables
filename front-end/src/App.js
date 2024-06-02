@@ -1,18 +1,31 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Dashboard from "./dashboard/Dashboard";
 import Layout from "./layout/Layout";
+import ReservationForm from "./reservations/ReservationForm";
+import ReservationList from "./reservations/ReservationList";
+import NotFound from "./layout/NotFound";
 
-/**
- * Defines the root application component.
- * @returns {JSX.Element}
- */
 function App() {
   return (
-    <Switch>
-      <Route path="/">
-        <Layout />
-      </Route>
-    </Switch>
+    <Router>
+      <Layout>
+        <Switch>
+          <Route exact path="/">
+            <Dashboard />
+          </Route>
+          <Route path="/reservations/new">
+            <ReservationForm />
+          </Route>
+          <Route path="/reservations">
+            <ReservationList />
+          </Route>
+          <Route>
+            <NotFound />
+          </Route>
+        </Switch>
+      </Layout>
+    </Router>
   );
 }
 
