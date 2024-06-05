@@ -1,7 +1,18 @@
 const knex = require("../db/connection");
 
 function create(reservation) {
-  return knex("reservations").insert(reservation).returning("*");
+  console.log("Creating reservation in database:", reservation);
+  return knex("reservations")
+    .insert(reservation)
+    .returning("*")
+    .then((createdRecords) => {
+      console.log("Reservation created:", createdRecords);
+      return createdRecords;
+    })
+    .catch((error) => {
+      console.error("Error creating reservation:", error);
+      throw error;
+    });
 }
 
 function list(date) {

@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import axiosInstance from "../utils/api";
 import { validateReservationDate } from "../utils/dateValidation";
+import { validateReservationTime } from "../utils/timeValidation";
 
 // Define the ReservationForm component
 function ReservationForm() {
-  // Define history for navigation
   const history = useHistory();
-  // Define state for form data
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -16,13 +15,12 @@ function ReservationForm() {
     reservation_time: "",
     people: 1,
   });
+  const [error, setError] = useState(null);
 
-  // Handle form input changes
   const handleChange = ({ target }) => {
     setFormData({ ...formData, [target.name]: target.value });
   };
 
-  // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log("Form submission started");
@@ -30,16 +28,26 @@ function ReservationForm() {
     // Validate the reservation date
     const dateError = validateReservationDate(formData.reservation_date);
     if (dateError) {
-      errorAlert(dateError);
+      setError(dateError);
+      console.error(dateError);
+      return;
+    }
+
+    // Validate the reservation time
+    const timeError = validateReservationTime(
+      formData.reservation_date,
+      formData.reservation_time
+    );
+    if (timeError) {
+      setError(timeError);
+      console.error(timeError);
       return;
     }
 
     try {
       const startTime = Date.now();
-      // Log the request payload
       console.log("Request Payload:", { data: formData });
 
-      // Send a POST request to create a reservation
       const response = await axiosInstance.post("/reservations", {
         data: formData,
       });
@@ -55,24 +63,22 @@ function ReservationForm() {
         reservation_time: "",
         people: 1,
       });
+      setError(null); // Clear any previous errors
       history.push(`/dashboard?date=${formData.reservation_date}`);
     } catch (error) {
       console.error("There was an error creating the reservation:", error);
-      // Log detailed error information
       if (error.response) {
         console.error("Error response data:", error.response.data);
+        setError(error.response.data.error); // Set error message from backend
       }
     }
   };
 
-  // Handle form cancellation
   const handleCancel = (event) => {
     event.preventDefault();
-    // Return to previous page
     history.goBack();
   };
 
-  // Render the reservation form
   return (
     <form onSubmit={handleSubmit}>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -113,6 +119,8 @@ function ReservationForm() {
           name="reservation_date"
           value={formData.reservation_date}
           onChange={handleChange}
+          placeholder="YYYY-MM-DD"
+          pattern="\d{4}-\d{2}-\d{2}"
           required
         />
       </label>
@@ -123,6 +131,8 @@ function ReservationForm() {
           name="reservation_time"
           value={formData.reservation_time}
           onChange={handleChange}
+          placeholder="HH:MM"
+          pattern="[0-9]{2}:[0-9]{2}"
           required
         />
       </label>

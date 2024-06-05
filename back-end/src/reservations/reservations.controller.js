@@ -5,11 +5,11 @@ const {
   isValidTime,
   validateReservationDate,
 } = require("../utils/dateValidation");
+const { validateReservationTime } = require("../utils/timeValidation");
 
 // Middleware function to validate reservation data
 function validateReservationData(req, res, next) {
   const { data = {} } = req.body;
-  console.log({ data });
   const requiredFields = [
     "first_name",
     "last_name",
@@ -50,7 +50,6 @@ function validateReservationData(req, res, next) {
   }
 
   const dateValidationError = validateReservationDate(data.reservation_date);
-  console.log("Date validation error:", dateValidationError); // Log the error
 
   if (dateValidationError) {
     return next({
@@ -59,20 +58,44 @@ function validateReservationData(req, res, next) {
     });
   }
 
+  const timeValidationError = validateReservationTime(
+    data.reservation_date,
+    data.reservation_time
+  );
+
+  if (timeValidationError) {
+    return next({
+      status: 400,
+      message: timeValidationError,
+    });
+  }
+
   next();
 }
 
 // Handler function to create a reservation
-async function create(req, res) {
-  const data = await service.create(req.body.data);
-  res.status(201).json({ data: data[0] }); // Return the first object in the array
+async function create(req, res, next) {
+  console.log("Create reservation request received:", req.body);
+  try {
+    const data = await service.create(req.body.data);
+    console.log("Reservation created successfully:", data);
+    res.status(201).json({ data: data[0] }); // Return the first object in the array
+  } catch (error) {
+    console.error("Error in creating reservation:", error);
+    next(error);
+  }
 }
 
 // Handler function to list reservations
-async function list(req, res) {
+async function list(req, res, next) {
   const date = req.query.date;
-  const data = await service.list(date);
-  res.json({ data });
+  try {
+    const data = await service.list(date);
+    res.json({ data });
+  } catch (error) {
+    console.error("Error fetching reservations:", error);
+    next(error);
+  }
 }
 
 module.exports = {
