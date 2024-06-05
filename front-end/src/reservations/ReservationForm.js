@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import axiosInstance from "../utils/api";
+import { validateReservationDate } from "../utils/dateValidation";
 
 // Define the ReservationForm component
 function ReservationForm() {
@@ -25,6 +26,13 @@ function ReservationForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log("Form submission started");
+
+    // Validate the reservation date
+    const dateError = validateReservationDate(formData.reservation_date);
+    if (dateError) {
+      errorAlert(dateError);
+      return;
+    }
 
     try {
       const startTime = Date.now();
@@ -67,6 +75,7 @@ function ReservationForm() {
   // Render the reservation form
   return (
     <form onSubmit={handleSubmit}>
+      {error && <div className="alert alert-danger">{error}</div>}
       <label>
         First Name:
         <input
