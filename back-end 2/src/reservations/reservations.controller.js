@@ -1,6 +1,7 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
+// Function to check if a date string is in valid format (YYYY-MM-DD)
 function isValidDate(dateString) {
   const regEx = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateString.match(regEx)) return false; // Invalid format
@@ -10,13 +11,16 @@ function isValidDate(dateString) {
   return d.toISOString().slice(0, 10) === dateString;
 }
 
+// Function to check if a time string is in valid format (HH:MM)
 function isValidTime(timeString) {
   const regEx = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
   return regEx.test(timeString);
 }
 
+// Middleware function to validate reservation data
 function validateReservationData(req, res, next) {
   const { data = {} } = req.body;
+  console.log("Received data:", data); // Log the received data
   const requiredFields = [
     "first_name",
     "last_name",
@@ -54,7 +58,7 @@ function validateReservationData(req, res, next) {
   next();
 }
 
-// Create handler for reservation resources
+// Handler function to create a reservation
 async function create(req, res) {
   console.log("Received request to create reservation:", req.body.data);
   const data = await service.create(req.body.data);
@@ -62,7 +66,7 @@ async function create(req, res) {
   res.status(201).json({ data: data[0] }); // Return the first object in the array
 }
 
-// List handler for reservation resources
+// Handler function to list reservations
 async function list(req, res) {
   const date = req.query.date;
   const data = await service.list(date);

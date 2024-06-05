@@ -1,7 +1,6 @@
 const knex = require("../db/connection");
 
 function create(reservation) {
-  console.log("Inserting reservation:", reservation);
   return knex("reservations").insert(reservation).returning("*");
 }
 

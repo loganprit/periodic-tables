@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../utils/api";
 
+// Define the ReservationList component
 function ReservationList() {
+  // Define state variable for reservations
   const [reservations, setReservations] = useState([]);
 
+  // Fetch reservations from the server when the component mounts
   useEffect(() => {
     async function fetchReservations() {
       try {
-        const response = await axios.get("/reservations");
+        const startTime = Date.now();
+        const response = await axiosInstance.get("/reservations");
+        const endTime = Date.now();
+        console.log(`Fetching reservations took ${endTime - startTime} ms`);
         setReservations(response.data.data);
       } catch (error) {
         console.error("Error fetching reservations:", error);
@@ -17,6 +23,7 @@ function ReservationList() {
     fetchReservations();
   }, []);
 
+  // Render the list of reservations
   return (
     <div>
       <h2>Reservations</h2>
