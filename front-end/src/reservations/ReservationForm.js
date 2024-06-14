@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import axiosInstance from "../utils/api";
+import React, { useState, useEffect } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import axiosInstance, { getReservation, updateReservation } from "../utils/api";
 import { validateReservationDate } from "../utils/dateValidation";
 import { validateReservationTime } from "../utils/timeValidation";
 
 // Define the ReservationForm component
 function ReservationForm() {
   const history = useHistory();
+  const { reservation_id } = useParams();
+  const isEdit = Boolean(reservation_id);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -17,8 +19,24 @@ function ReservationForm() {
   });
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    if (isEdit) {
+      const loadReservation = async () => {
+        try {
+          const response = await getReservation(reservation_id);
+          setFormData(response);
+        } catch (error) {
+          console.error("Error loading reservation:", error);
+        }
+      };
+      loadReservation();
+    }
+  }, [isEdit, reservation_id]);
+
   const handleChange = ({ target }) => {
-    setFormData({ ...formData, [target.name]: target.value });
+    const value =
+      target.name === "people" ? Number(target.value) : target.value;
+    setFormData({ ...formData, [target.name]: value });
   };
 
   const handleSubmit = async (event) => {
@@ -48,13 +66,14 @@ function ReservationForm() {
       const startTime = Date.now();
       console.log("Request Payload:", { data: formData });
 
-      const response = await axiosInstance.post("/reservations", {
-        data: formData,
-      });
+      if (isEdit) {
+        await updateReservation(reservation_id, formData);
+      } else {
+        await axiosInstance.post("/reservations", { data: formData });
+      }
+
       const endTime = Date.now();
       console.log(`Form submission took ${endTime - startTime} ms`);
-      console.log("Response:", response);
-
       setFormData({
         first_name: "",
         last_name: "",
@@ -66,7 +85,10 @@ function ReservationForm() {
       setError(null); // Clear any previous errors
       history.push(`/dashboard?date=${formData.reservation_date}`);
     } catch (error) {
-      console.error("There was an error creating the reservation:", error);
+      console.error(
+        "There was an error creating/updating the reservation:",
+        error
+      );
       if (error.response) {
         console.error("Error response data:", error.response.data);
         setError(error.response.data.error); // Set error message from backend
@@ -146,8 +168,12 @@ function ReservationForm() {
           required
         />
       </label>
-      <button type="submit">Create Reservation</button>
-      <button type="button" onClick={handleCancel}>
+      <button type="submit">Submit</button>
+      <button
+        type="button"
+        onClick={handleCancel}
+        data-reservation-id-cancel={formData.reservation_id}
+      >
         Cancel
       </button>
     </form>

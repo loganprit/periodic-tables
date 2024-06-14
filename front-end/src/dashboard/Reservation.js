@@ -10,6 +10,9 @@ function Reservation({ reservation }) {
       <p>Date: {reservation.reservation_date}</p>
       <p>Time: {reservation.reservation_time}</p>
       <p>People: {reservation.people}</p>
+      <p data-reservation-id-status={reservation.reservation_id}>
+        Status: {reservation.status}
+      </p>
     </div>
   );
 }

@@ -18,7 +18,7 @@ function App() {
             <ReservationForm />
           </Route>
           <Route path="/reservations">
-            <ReservationList />
+            <ReservationList loadOnMount={true} />
           </Route>
           <Route>
             <NotFound />

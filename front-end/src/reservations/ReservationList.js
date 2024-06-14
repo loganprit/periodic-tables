@@ -1,41 +1,80 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/api";
+import { Link } from "react-router-dom";
+import { cancelReservation, listReservations } from "../utils/api";
 
-// Define the ReservationList component
-function ReservationList() {
-  // Define state variable for reservations
-  const [reservations, setReservations] = useState([]);
+function ReservationList({
+  reservations: initialReservations = [],
+  loadOnMount = true,
+}) {
+  const [reservations, setReservations] = useState(initialReservations);
 
-  // Fetch reservations from the server when the component mounts
+  const loadReservations = async () => {
+    try {
+      const response = await listReservations();
+      setReservations(response.data.data);
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+    }
+  };
+
   useEffect(() => {
-    async function fetchReservations() {
+    if (loadOnMount) {
+      loadReservations();
+    }
+  }, [loadOnMount]);
+
+  const handleCancelReservation = async (reservation_id) => {
+    if (
+      window.confirm(
+        "Are you sure you want to cancel this reservation? This cannot be undone."
+      )
+    ) {
       try {
-        const startTime = Date.now();
-        const response = await axiosInstance.get("/reservations");
-        const endTime = Date.now();
-        console.log(`Fetching reservations took ${endTime - startTime} ms`);
-        setReservations(response.data.data);
+        await cancelReservation(reservation_id);
+        loadReservations(); // Ensure the state is updated after canceling a reservation
       } catch (error) {
-        console.error("Error fetching reservations:", error);
+        console.error("Failed to cancel reservation:", error);
       }
     }
+  };
 
-    fetchReservations();
-  }, []);
-
-  // Render the list of reservations
   return (
     <div>
       <h2>Reservations</h2>
-      <ul>
-        {reservations.map((reservation) => (
-          <li key={reservation.reservation_id}>
-            {reservation.first_name} {reservation.last_name} -{" "}
-            {reservation.mobile_number} - {reservation.reservation_date}{" "}
-            {reservation.reservation_time} - {reservation.people} people
-          </li>
-        ))}
-      </ul>
+      {reservations.length === 0 ? (
+        <p>No reservations found</p>
+      ) : (
+        <ul>
+          {reservations.map((reservation) => (
+            <li key={reservation.reservation_id}>
+              {reservation.first_name} {reservation.last_name} -{" "}
+              {reservation.mobile_number} - {reservation.reservation_date}{" "}
+              {reservation.reservation_time} - {reservation.people} people
+              <p data-reservation-id-status={reservation.reservation_id}>
+                Status: {reservation.status}
+              </p>
+              {reservation.status === "booked" && (
+                <>
+                  <Link to={`/reservations/${reservation.reservation_id}/seat`}>
+                    <button>Seat</button>
+                  </Link>
+                  <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+                    <button>Edit</button>
+                  </Link>
+                  <button
+                    data-reservation-id-cancel={reservation.reservation_id}
+                    onClick={() =>
+                      handleCancelReservation(reservation.reservation_id)
+                    }
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
