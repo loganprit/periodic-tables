@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import axiosInstance from "../utils/api";
+import "./SeatReservation.css";
 
 function SeatReservation() {
   const history = useHistory();
@@ -8,19 +9,36 @@ function SeatReservation() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState("");
   const [error, setError] = useState(null);
+  const [reservation, setReservation] = useState(null);
 
   useEffect(() => {
-    async function loadTables() {
+    let isMounted = true;
+
+    async function loadData() {
       try {
-        const response = await axiosInstance.get("/tables");
-        setTables(response.data.data);
+        const [tablesResponse, reservationResponse] = await Promise.all([
+          axiosInstance.get("/tables"),
+          axiosInstance.get(`/reservations/${reservation_id}`),
+        ]);
+
+        if (isMounted) {
+          setTables(tablesResponse.data.data);
+          setReservation(reservationResponse.data.data);
+        }
       } catch (error) {
-        setError(error.message);
+        console.error("Error loading data:", error);
+        if (isMounted) {
+          setError("An error occurred while loading data. Please try again.");
+        }
       }
     }
 
-    loadTables();
-  }, []);
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reservation_id]);
 
   const handleChange = ({ target }) => {
     setSelectedTable(target.value);
@@ -28,19 +46,44 @@ function SeatReservation() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (reservation && reservation.status === "seated") {
+      setError("This reservation is already seated.");
+      return;
+    }
+
+    const selectedTableData = tables.find(
+      (table) => table.table_id === Number(selectedTable)
+    );
+    if (selectedTableData && selectedTableData.capacity < reservation.people) {
+      setError(
+        "The selected table does not have enough capacity for this reservation."
+      );
+      return;
+    }
+
     try {
-      console.log(`Seating reservation at table: ${selectedTable}`);
-      await axiosInstance.put(`/tables/${selectedTable}/seat`, {
-        data: { reservation_id },
-      });
-      history.push("/dashboard");
+      console.log(
+        `Attempting to seat reservation ${reservation_id} at table ${selectedTable}`
+      );
+      const response = await axiosInstance.put(
+        `/tables/${selectedTable}/seat`,
+        {
+          data: { reservation_id },
+        }
+      );
+      console.log("API Response:", response.data);
+      history.push(`/dashboard?date=${reservation.reservation_date}`);
     } catch (error) {
-      if (error.response) {
-        setError(error.response.data.error);
-      } else {
-        setError(error.message);
-      }
       console.error("Error seating reservation:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        setError(
+          error.response.data.error ||
+            "An error occurred while seating the reservation."
+        );
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -49,12 +92,21 @@ function SeatReservation() {
     history.goBack();
   };
 
+  if (!reservation) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <label>
-        Table:
+    <main className="seat-container">
+      <div className="seat-header">
+        Seat Reservation for {reservation.first_name} {reservation.last_name}
+      </div>
+      <form className="seat-form" onSubmit={handleSubmit}>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <p>Status: {reservation.status}</p>
+        <label className="seat-label">Table:</label>
         <select
+          className="seat-input"
           name="table_id"
           value={selectedTable}
           onChange={handleChange}
@@ -63,16 +115,24 @@ function SeatReservation() {
           <option value="">Select a table</option>
           {tables.map((table) => (
             <option key={table.table_id} value={table.table_id}>
-              {table.table_name} - {table.capacity}
+              {`${table.table_name} - ${table.capacity}`}
             </option>
           ))}
         </select>
-      </label>
-      <button type="submit">Submit</button>
-      <button type="button" onClick={handleCancel}>
-        Cancel
-      </button>
-    </form>
+        <div className="seat-button-container">
+          <button
+            className="btn"
+            type="submit"
+            disabled={reservation.status === "seated"}
+          >
+            Submit
+          </button>
+          <button className="btn" type="button" onClick={handleCancel}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </main>
   );
 }
 

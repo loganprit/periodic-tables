@@ -4,4 +4,5 @@ module.exports = {
     slowMo: process.env.SLO_MO || 0,
     devtools: true,
   },
+  browserContext: "default",
 };

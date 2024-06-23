@@ -14,7 +14,7 @@ function list(date, mobile_number) {
   return knex("reservations")
     .select("*")
     .where({ reservation_date: date })
-    .whereNotExists(knex("reservations").where({ status: "finished" }))
+    .andWhereNot({ status: "finished" }) // Ensure this line is correct
     .orderBy("reservation_time");
 }
 
@@ -36,15 +36,14 @@ function seat(reservation_id, table_id) {
       throw new Error("Reservation is already seated");
     }
 
+    // Only update the table with reservation_id in this service
     await trx("tables")
       .where({ table_id })
       .update({ reservation_id })
       .returning("*");
 
-    return trx("reservations")
-      .where({ reservation_id })
-      .update({ status: "seated" })
-      .returning("*");
+    // Return the reservation as is without updating the status here
+    return reservation;
   });
 }
 

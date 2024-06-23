@@ -84,6 +84,11 @@ async function finishTable(req, res, next) {
   }
 
   const updatedTable = await service.finish(table_id);
+  console.log(
+    "Table finished:",
+    table_id,
+    "Updated reservation status to finished"
+  );
   res.status(200).json({ data: updatedTable });
 }
 

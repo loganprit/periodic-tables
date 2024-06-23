@@ -1,0 +1,87 @@
+/* Reservation List Styles */
+.reservation-list-container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+.reservation-list-header {
+    font-size: 24px;
+    font-family: 'Lemonada', sans-serif;
+    color: #000000;
+    margin-bottom: 20px;
+}
+
+.reservation-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+}
+
+.reservation-list-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.reservation-list-item:last-child {
+    border-bottom: none;
+}
+
+.reservation-list-item p {
+    margin: 0;
+    font-style: italic;
+}
+
+.reservation-list-button-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn {
+    display: inline-block;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    border-radius: 25px;
+    background-color: #000000;
+    text-align: center;
+    padding: 5px 15px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.btn:hover {
+    background-color: #444444;
+}
+
+.btn:active,
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn.disabled,
+.btn[disabled] {
+    pointer-events: none;
+}
+
+/* No reservations found message */
+.no-reservations {
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    color: #444444;
+}

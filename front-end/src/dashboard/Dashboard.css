@@ -1,0 +1,171 @@
+/* Dashboard Styles */
+.dashboard-container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    text-align: center;
+}
+
+.dashboard-header {
+    font-size: 24px;
+    font-family: 'Lemonada', sans-serif;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-reservations,
+.dashboard-tables {
+    margin-top: 20px;
+    text-align: left;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.dashboard-reservations h3,
+.dashboard-tables h3 {
+    font-size: 20px;
+    color: #444444;
+    font-family: 'Bebas Neue', sans-serif;
+    margin-bottom: 10px;
+}
+
+.dashboard-reservations-list,
+.dashboard-tables-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.dashboard-reservations-list li,
+.dashboard-tables-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.dashboard-reservations-list li:last-child,
+.dashboard-tables-list li:last-child {
+    border-bottom: none;
+}
+
+.dashboard-reservations-list li p {
+    padding-top: 0px;
+    margin-left: 0px;
+    font-style: italic;
+
+}
+
+.dashboard-reservations p {
+    padding-top: 0px;
+    margin-left: 10px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+/* Button Styles */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.reservation-table-button-container {
+    display: flex;
+    justify-content: left;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn {
+    display: inline-block;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    border-radius: 25px;
+    background-color: #000000;
+    text-align: center;
+    padding: 10px 30px;
+    min-width: 120px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.res-tbl-btn {
+    display: inline-block;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    border-radius: 25px;
+    background-color: #000000;
+    text-align: center;
+    padding: 5px 5px;
+    min-width: 80px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.btn:hover {
+    background-color: #444444;
+}
+
+.btn:active,
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn.disabled,
+.btn[disabled] {
+    pointer-events: none;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .button-container {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+    }
+
+    .button-container .btn {
+        flex: 1;
+        margin: 5px;
+        padding: 8px 10px;
+        min-width: unset;
+        text-align: center;
+    }
+
+    .reservation-table-button-container {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .reservation-table-button-container .res-tbl-btn {
+        flex: 0 0 auto;
+        margin: 0px;
+        padding: 5px 5px;
+        width: 80px;
+    }
+
+    .dashboard-reservations,
+    .dashboard-tables {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}

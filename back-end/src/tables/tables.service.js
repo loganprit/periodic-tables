@@ -8,7 +8,7 @@ function list() {
   return knex("tables").select("*").orderBy("table_name");
 }
 
-function seat(table_id, reservation_id) {
+async function seat(table_id, reservation_id) {
   return knex.transaction(async (trx) => {
     const table = await trx("tables").where({ table_id }).first();
 
@@ -42,8 +42,10 @@ function seat(table_id, reservation_id) {
       throw { status: 400, message: "Reservation is already seated" };
     }
 
+    // Update table with reservation_id
     await trx("tables").where({ table_id }).update({ reservation_id });
 
+    // Update reservation status to seated
     await trx("reservations")
       .where({ reservation_id })
       .update({ status: "seated" });

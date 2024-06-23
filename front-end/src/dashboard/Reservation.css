@@ -1,0 +1,45 @@
+/* Reservation Styles */
+.reservation-container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 600px;
+    text-align: center;
+}
+
+.reservation-header {
+    font-size: 24px;
+    font-family: 'Lemonada', sans-serif;
+    color: #000000;
+    margin-bottom: 20px;
+}
+
+.reservation-details {
+    text-align: left;
+}
+
+.reservation-label {
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.reservation-value {
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+}
+
+.alert.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 4px;
+}

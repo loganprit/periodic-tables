@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cancelReservation, listReservations } from "../utils/api";
+import "./ReservationList.css";
 
 function ReservationList({
   reservations: initialReservations = [],
@@ -39,14 +40,17 @@ function ReservationList({
   };
 
   return (
-    <div>
-      <h2>Reservations</h2>
+    <div className="reservation-list-container">
+      <h2 className="reservation-list-header">Reservations</h2>
       {reservations.length === 0 ? (
-        <p>No reservations found</p>
+        <p className="no-reservations">No reservations found</p>
       ) : (
-        <ul>
+        <ul className="reservation-list">
           {reservations.map((reservation) => (
-            <li key={reservation.reservation_id}>
+            <li
+              className="reservation-list-item"
+              key={reservation.reservation_id}
+            >
               {reservation.first_name} {reservation.last_name} -{" "}
               {reservation.mobile_number} - {reservation.reservation_date}{" "}
               {reservation.reservation_time} - {reservation.people} people
@@ -54,14 +58,15 @@ function ReservationList({
                 Status: {reservation.status}
               </p>
               {reservation.status === "booked" && (
-                <>
+                <div className="reservation-list-button-container">
                   <Link to={`/reservations/${reservation.reservation_id}/seat`}>
-                    <button>Seat</button>
+                    <button className="btn">Seat</button>
                   </Link>
                   <Link to={`/reservations/${reservation.reservation_id}/edit`}>
-                    <button>Edit</button>
+                    <button className="btn">Edit</button>
                   </Link>
                   <button
+                    className="btn"
                     data-reservation-id-cancel={reservation.reservation_id}
                     onClick={() =>
                       handleCancelReservation(reservation.reservation_id)
@@ -69,7 +74,7 @@ function ReservationList({
                   >
                     Cancel
                   </button>
-                </>
+                </div>
               )}
             </li>
           ))}

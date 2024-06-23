@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import axiosInstance from "../utils/api";
+import "./TableForm.css";
 
 function TableForm() {
   const history = useHistory();
@@ -57,35 +58,50 @@ function TableForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <label>
-        Table Name:
-        <input
-          type="text"
-          name="table_name"
-          value={formData.table_name}
-          onChange={handleChange}
-          required
-          minLength={2}
-        />
-      </label>
-      <label>
-        Capacity:
-        <input
-          type="number"
-          name="capacity"
-          value={formData.capacity}
-          onChange={handleChange}
-          required
-          min={1}
-        />
-      </label>
-      <button type="submit">Submit</button>
-      <button type="button" onClick={handleCancel}>
-        Cancel
-      </button>
-    </form>
+    <div className="table-form-container">
+      <div className="table-form-header">Create Table</div>
+      <form className="table-form" onSubmit={handleSubmit}>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <div className="form-group">
+          <label className="form-label" htmlFor="table_name">
+            Table Name:
+          </label>
+          <input
+            className="form-input"
+            type="text"
+            name="table_name"
+            id="table_name"
+            value={formData.table_name}
+            onChange={handleChange}
+            required
+            minLength={2}
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label" htmlFor="capacity">
+            Capacity:
+          </label>
+          <input
+            className="form-input"
+            type="number"
+            name="capacity"
+            id="capacity"
+            value={formData.capacity}
+            onChange={handleChange}
+            required
+            min={1}
+          />
+        </div>
+        <div className="button-container">
+          <button className="btn" type="submit">
+            Submit
+          </button>
+          <button className="btn" type="button" onClick={handleCancel}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

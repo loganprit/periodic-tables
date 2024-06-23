@@ -6,6 +6,7 @@ import {
   finishTable,
   updateReservationStatus,
 } from "../utils/api";
+import "./Dashboard.css";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -16,17 +17,26 @@ function Dashboard() {
   const query = useQuery();
   let date = query.get("date");
 
-  if (!date) {
+  const getTodayDate = () => {
     const today = new Date();
-    date = today.toISOString().split("T")[0];
-  }
+    const offset = today.getTimezoneOffset();
+    today.setMinutes(today.getMinutes() - offset); // Adjust for timezone
+    return today.toISOString().split("T")[0];
+  };
 
+  if (!date) {
+    date = getTodayDate();
+  } else {
+    date = new Date(date).toISOString().split("T")[0]; // Ensure date is in correct format
+  }
   const [reservations, setReservations] = useState([]);
   const [tables, setTables] = useState([]);
 
   const loadDashboard = useCallback(async () => {
+    console.log("Loading dashboard for date:", date);
     try {
       const reservationsResponse = await listReservations({ date });
+      console.log("Reservations received:", reservationsResponse);
       const tablesResponse = await listTables();
       setReservations(reservationsResponse);
       setTables(tablesResponse);
@@ -46,8 +56,8 @@ function Dashboard() {
   };
 
   const handleToday = () => {
-    const today = new Date();
-    history.push(`/dashboard?date=${today.toISOString().split("T")[0]}`);
+    const today = getTodayDate();
+    history.push(`/dashboard?date=${today}`);
   };
 
   const handleNext = () => {
@@ -71,15 +81,6 @@ function Dashboard() {
     }
   };
 
-  const handleSeat = async (reservation_id) => {
-    try {
-      await updateReservationStatus(reservation_id, "seated");
-      loadDashboard(); // Ensure the state is updated after seating a reservation
-    } catch (error) {
-      console.error("Failed to seat reservation:", error);
-    }
-  };
-
   const handleCancelReservation = async (reservation_id) => {
     if (
       window.confirm(
@@ -95,76 +96,109 @@ function Dashboard() {
     }
   };
 
+  const formatDate = (dateString) => {
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    // Use the date string directly without creating a new Date object
+    return new Date(dateString + "T00:00:00").toLocaleDateString(
+      undefined,
+      options
+    );
+  };
+
+  const today = getTodayDate();
+
   return (
-    <main>
-      <h1>Dashboard</h1>
-      <div className="d-md-flex mb-3">
-        <h4 className="mb-0">Reservations for {date}</h4>
-        <button className="btn btn-primary ml-2" onClick={handlePrevious}>
+    <main className="dashboard-container">
+      <div className="dashboard-header">
+        Reservations for {formatDate(date)}
+      </div>
+      <div className="button-container">
+        <button className="btn" onClick={handlePrevious}>
           Previous
         </button>
-        <button className="btn btn-primary ml-auto" onClick={handleToday}>
+        <button className="btn" onClick={handleToday} disabled={date === today}>
           Today
         </button>
-        <button className="btn btn-primary ml-2" onClick={handleNext}>
+        <button className="btn" onClick={handleNext}>
           Next
         </button>
       </div>
-      <h2>Reservations</h2>
-      <ul>
-        {reservations
-          .filter((reservation) => reservation.status !== "finished")
-          .map((reservation) => (
-            <li key={reservation.reservation_id}>
-              {reservation.first_name} {reservation.last_name} -{" "}
-              {reservation.people}
-              <p data-reservation-id-status={reservation.reservation_id}>
-                Status: {reservation.status}
-              </p>
-              {reservation.status === "booked" && (
-                <>
-                  <Link to={`/reservations/${reservation.reservation_id}/seat`}>
-                    <button
-                      onClick={() => handleSeat(reservation.reservation_id)}
-                    >
-                      Seat
-                    </button>
-                  </Link>
-                  <Link to={`/reservations/${reservation.reservation_id}/edit`}>
-                    <button>Edit</button>
-                  </Link>
+      <div className="dashboard-reservations">
+        <h3>Reservations</h3>
+        {reservations.length === 0 ? (
+          <p>No reservations found</p>
+        ) : (
+          <ul className="dashboard-reservations-list">
+            {reservations
+              .filter((reservation) => reservation.status !== "finished")
+              .map((reservation) => (
+                <li key={reservation.reservation_id}>
+                  {reservation.first_name} {reservation.last_name} -{" "}
+                  {reservation.people}
+                  <p data-reservation-id-status={reservation.reservation_id}>
+                    Status: {reservation.status}
+                  </p>
+                  {reservation.status === "booked" && (
+                    <>
+                      <div className="reservation-table-button-container">
+                        <Link
+                          to={`/reservations/${reservation.reservation_id}/seat`}
+                        >
+                          <button className="res-tbl-btn">Seat</button>
+                        </Link>
+                        <Link
+                          to={`/reservations/${reservation.reservation_id}/edit`}
+                        >
+                          <button className="res-tbl-btn">Edit</button>
+                        </Link>
+                        <button
+                          className="res-tbl-btn"
+                          data-reservation-id-cancel={
+                            reservation.reservation_id
+                          }
+                          onClick={() =>
+                            handleCancelReservation(reservation.reservation_id)
+                          }
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+          </ul>
+        )}
+      </div>
+      <div className="dashboard-tables">
+        <h3>Tables</h3>
+        <ul className="dashboard-tables-list">
+          {tables.map((table) => (
+            <li key={table.table_id}>
+              {table.table_name} - {table.capacity} -{" "}
+              <span data-table-id-status={table.table_id}>
+                {table.reservation_id ? "Occupied" : "Free"}
+              </span>
+              {table.reservation_id && (
+                <div className="reservation-table-button-container">
                   <button
-                    data-reservation-id-cancel={reservation.reservation_id}
-                    onClick={() =>
-                      handleCancelReservation(reservation.reservation_id)
-                    }
+                    className="res-tbl-btn"
+                    data-table-id-finish={table.table_id}
+                    onClick={() => handleFinish(table.table_id)}
                   >
-                    Cancel
+                    Finish
                   </button>
-                </>
+                </div>
               )}
             </li>
           ))}
-      </ul>
-      <h2>Tables</h2>
-      <ul>
-        {tables.map((table) => (
-          <li key={table.table_id}>
-            {table.table_name} - {table.capacity} -{" "}
-            <span data-table-id-status={table.table_id}>
-              {table.reservation_id ? "Occupied" : "Free"}
-            </span>
-            {table.reservation_id && (
-              <button
-                data-table-id-finish={table.table_id}
-                onClick={() => handleFinish(table.table_id)}
-              >
-                Finish
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+        </ul>
+      </div>
     </main>
   );
 }

@@ -34,13 +34,15 @@ export async function listReservations(params = {}, signal) {
       url.searchParams.append(key, value.toString());
     }
   });
-  return await fetchJson(
+  const reservations = await fetchJson(
     url,
     { headers: { "Content-Type": "application/json" }, signal },
     []
   )
     .then(formatReservationDate)
     .then(formatReservationTime);
+  console.log("Fetched Reservations:", reservations);
+  return reservations || [];
 }
 
 export async function listTables(signal) {

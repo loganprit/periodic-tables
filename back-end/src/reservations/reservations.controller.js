@@ -95,8 +95,10 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   const { date, mobile_number } = req.query;
+  console.log("Fetching reservations for date:", date);
   try {
     const data = await service.list(date, mobile_number);
+    console.log("Reservations found:", data.length);
     res.json({ data });
   } catch (error) {
     next(error);

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { listReservations } from "../utils/api";
 import ReservationList from "./ReservationList";
+import "./SearchReservations.css";
 
 function SearchReservations() {
   const [mobileNumber, setMobileNumber] = useState("");
@@ -24,19 +25,28 @@ function SearchReservations() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Enter a customer's phone number:
+    <main className="search-container">
+      <div className="search-header">Search Reservations</div>
+      <form className="search-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="mobile_number">
+            Enter a customer's phone number:
+          </label>
           <input
+            className="form-input"
             type="text"
             name="mobile_number"
+            id="mobile_number"
             value={mobileNumber}
             onChange={handleChange}
-            placeholder="Enter a customer's phone number"
+            placeholder="Phone #"
           />
-        </label>
-        <button type="submit">Find</button>
+        </div>
+        <div className="button-container">
+          <button className="btn" type="submit">
+            Find
+          </button>
+        </div>
       </form>
       {error && <div className="alert alert-danger">{error}</div>}
       {reservations.length === 0 ? (
@@ -44,7 +54,7 @@ function SearchReservations() {
       ) : (
         <ReservationList reservations={reservations} loadOnMount={false} />
       )}
-    </div>
+    </main>
   );
 }
 
