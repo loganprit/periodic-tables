@@ -22,7 +22,7 @@ function Layout() {
     <div className="container-fluid">
       {isMobile && (
         <div>
-          <div className="home-logo d-flex flex-column justify-content-center align-items-center">
+          <div className="d-flex flex-column justify-content-center align-items-center">
             <div id="logo">
               <div id="mobile-logo" className="lemonada-text">
                 Periodic Tables

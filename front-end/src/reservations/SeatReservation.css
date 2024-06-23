@@ -1,4 +1,4 @@
-/* Seat Reservation Styles */
+/* Container styles */
 .seat-container {
     padding: 20px;
     background-color: #ffffff;
@@ -9,6 +9,7 @@
     text-align: center;
 }
 
+/* Header styles */
 .seat-header {
     font-size: 24px;
     font-family: 'Lemonada', sans-serif;
@@ -16,39 +17,48 @@
     margin-bottom: 20px;
 }
 
+/* Form styles */
 .seat-form {
+    text-align: left;
     margin-top: 20px;
-    font-size: 20px;
+}
+
+/* Status styles */
+.seat-status {
     text-align: center;
+    /* Center-align the status */
+    font-size: 18px;
+    font-family: "Bebas Neue", sans-serif;
+    margin-bottom: 10px;
 }
 
 .seat-label {
     font-family: "Roboto", sans-serif;
     font-weight: 300;
     font-size: 16px;
-    display: inline-block;
-    margin-right: 10px;
-    vertical-align: middle;
+    display: block;
+    margin-bottom: 10px;
+    /* Adjusted to match other forms */
 }
 
 .seat-input {
-    width: calc(100% - 80px);
-    /* Adjust based on label width */
+    width: 100%;
     padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    /* Adjusted to match other forms */
     font-size: 16px;
     border-radius: 4px;
     border: 1px solid #ddd;
     box-sizing: border-box;
-    display: inline-block;
-    vertical-align: middle;
 }
 
+/* Button styles */
 .seat-button-container {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     gap: 10px;
     margin-top: 20px;
-    margin-bottom: 10px;
 }
 
 .btn {

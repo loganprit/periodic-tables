@@ -59,13 +59,11 @@ function TableForm() {
 
   return (
     <div className="table-form-container">
-      <div className="table-form-header">Create Table</div>
+      <h2 className="table-form-header">Create Table</h2>
       <form className="table-form" onSubmit={handleSubmit}>
         {error && <div className="alert alert-danger">{error}</div>}
-        <div className="form-group">
-          <label className="form-label" htmlFor="table_name">
-            Table Name:
-          </label>
+        <label className="form-label" htmlFor="table_name">
+          Table Name:
           <input
             className="form-input"
             type="text"
@@ -76,11 +74,9 @@ function TableForm() {
             required
             minLength={2}
           />
-        </div>
-        <div className="form-group">
-          <label className="form-label" htmlFor="capacity">
-            Capacity:
-          </label>
+        </label>
+        <label className="form-label" htmlFor="capacity">
+          Capacity:
           <input
             className="form-input"
             type="number"
@@ -91,7 +87,7 @@ function TableForm() {
             required
             min={1}
           />
-        </div>
+        </label>
         <div className="button-container">
           <button className="btn" type="submit">
             Submit

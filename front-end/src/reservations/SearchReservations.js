@@ -20,18 +20,17 @@ function SearchReservations() {
       const data = await listReservations({ mobile_number: mobileNumber });
       setReservations(data);
     } catch (error) {
-      setError(error.message);
+      setError("Must enter a valid phone number.");
+      // setError(error.message);
     }
   };
 
   return (
-    <main className="search-container">
-      <div className="search-header">Search Reservations</div>
+    <div className="search-container">
+      <h2 className="search-header">Search Reservations</h2>
       <form className="search-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label" htmlFor="mobile_number">
-            Enter a customer's phone number:
-          </label>
+        <label className="form-label" htmlFor="mobile_number">
+          Enter a customer's phone number:
           <input
             className="form-input"
             type="text"
@@ -41,20 +40,21 @@ function SearchReservations() {
             onChange={handleChange}
             placeholder="Phone #"
           />
-        </div>
+        </label>
         <div className="button-container">
           <button className="btn" type="submit">
             Find
           </button>
         </div>
       </form>
+
       {error && <div className="alert alert-danger">{error}</div>}
       {reservations.length === 0 ? (
         <p>No reservations found</p>
       ) : (
         <ReservationList reservations={reservations} loadOnMount={false} />
       )}
-    </main>
+    </div>
   );
 }
 

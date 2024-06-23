@@ -103,22 +103,24 @@ function SeatReservation() {
       </div>
       <form className="seat-form" onSubmit={handleSubmit}>
         {error && <div className="alert alert-danger">{error}</div>}
-        <p>Status: {reservation.status}</p>
-        <label className="seat-label">Table:</label>
-        <select
-          className="seat-input"
-          name="table_id"
-          value={selectedTable}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select a table</option>
-          {tables.map((table) => (
-            <option key={table.table_id} value={table.table_id}>
-              {`${table.table_name} - ${table.capacity}`}
-            </option>
-          ))}
-        </select>
+        <p className="seat-status">Status: {reservation.status}</p>
+        <label className="seat-label" htmlFor="table_id">
+          Table:
+          <select
+            className="seat-input"
+            name="table_id"
+            value={selectedTable}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select a table</option>
+            {tables.map((table) => (
+              <option key={table.table_id} value={table.table_id}>
+                {`${table.table_name} - ${table.capacity}`}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="seat-button-container">
           <button
             className="btn"

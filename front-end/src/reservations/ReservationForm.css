@@ -42,7 +42,7 @@
 
 .reservation-form-button-container {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     gap: 10px;
     margin-bottom: 20px;
 }

@@ -13,13 +13,16 @@ function Menu({ isHomePage }) {
   ];
 
   const menuAnimation = useSpring({
-    opacity: isHomePage ? 0 : 1,
-    transform: isHomePage ? "translateY(-100%)" : "translateY(0%)",
+    opacity: 1,
+    transform: "translateY(0%)",
     config: { mass: 1, tension: 180, friction: 12 },
   });
 
   return (
-    <animated.nav className="navbar container" style={menuAnimation}>
+    <animated.nav
+      className="navbar container justify-content-center align-items-center"
+      style={menuAnimation}
+    >
       <ul className="nav justify-content-center w-100">
         {navItems.map((item) => (
           <li className="nav-item" key={item.name}>
