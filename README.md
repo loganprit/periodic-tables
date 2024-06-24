@@ -26,28 +26,28 @@ For detailed API documentation, please refer to the respective backend and front
 
 ### Desktop
 
-- **Home Page**
+- **Home Page**\
   ![Home Page - Desktop](/images/desktop-home.jpg)
-- **Dashboard Page**
+- **Dashboard Page**\
   ![Dashboard Page - Desktop](/images/desktop-dashboard.jpg)
-- **Search Page**
+- **Search Page**\
   ![Search Page - Desktop](/images/desktop-search.jpg)
-- **New Reservation Page**
+- **New Reservation Page**\
   ![New Reservation Page - Desktop](/images/desktop-new-reservation.jpg)
-- **New Table Page**
+- **New Table Page**\
   ![New Table Page - Desktop](/images/desktop-new-table.jpg)
 
 ### Mobile
 
-- **Home Page**
+- **Home Page**\
   ![Home Page - Mobile](/images/mobile-home.jpg)
-- **Dashboard Page**
+- **Dashboard Page**\
   ![Dashboard Page - Mobile](/images/mobile-dashboard.jpg)
-- **Search Page**
+- **Search Page**\
   ![Search Page - Mobile](/images/mobile-search.jpg)
-- **New Reservation Page**
+- **New Reservation Page**\
   ![New Reservation Page - Mobile](/images/mobile-new-reservation.jpg)
-- **New Table Page**
+- **New Table Page**\
   ![New Table Page - Mobile](/images/mobile-new-table.jpg)
 
 ## Technology Stack
