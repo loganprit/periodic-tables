@@ -1,6 +1,7 @@
 const service = require("./tables.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
+// Middleware to validate table data
 function validateTableData(req, res, next) {
   const { data = {} } = req.body;
   const requiredFields = ["table_name", "capacity"];
@@ -31,6 +32,7 @@ function validateTableData(req, res, next) {
   next();
 }
 
+// Create a new table
 async function create(req, res, next) {
   try {
     const data = await service.create(req.body.data);
@@ -40,6 +42,7 @@ async function create(req, res, next) {
   }
 }
 
+// Get a list of tables
 async function list(req, res, next) {
   try {
     const data = await service.list();
@@ -49,6 +52,7 @@ async function list(req, res, next) {
   }
 }
 
+// Seat a reservation at a table
 async function seat(req, res, next) {
   const { table_id } = req.params;
   const { data = {} } = req.body;
@@ -71,6 +75,7 @@ async function seat(req, res, next) {
   }
 }
 
+// Finish a table (clear the reservation)
 async function finishTable(req, res, next) {
   const { table_id } = req.params;
   const table = await service.read(table_id);
@@ -84,11 +89,6 @@ async function finishTable(req, res, next) {
   }
 
   const updatedTable = await service.finish(table_id);
-  console.log(
-    "Table finished:",
-    table_id,
-    "Updated reservation status to finished"
-  );
   res.status(200).json({ data: updatedTable });
 }
 

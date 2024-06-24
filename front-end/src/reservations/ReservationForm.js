@@ -5,7 +5,10 @@ import { validateReservationDate } from "../utils/dateValidation";
 import { validateReservationTime } from "../utils/timeValidation";
 import "./ReservationForm.css";
 
-// Define the ReservationForm component
+/**
+ * ReservationForm component for creating and updating reservations.
+ * @returns {JSX.Element} The rendered ReservationForm component.
+ */
 function ReservationForm() {
   const history = useHistory();
   const { reservation_id } = useParams();

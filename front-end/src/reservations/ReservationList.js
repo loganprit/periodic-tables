@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import { cancelReservation, listReservations } from "../utils/api";
 import "./ReservationList.css";
 
+/**
+ * ReservationList component to display a list of reservations.
+ * @param {Object} props - Component properties.
+ * @param {Array} props.initialReservations - Initial list of reservations.
+ * @param {boolean} props.loadOnMount - Flag to load reservations on mount.
+ * @returns {JSX.Element} The rendered ReservationList component.
+ */
 function ReservationList({
   reservations: initialReservations = [],
   loadOnMount = true,

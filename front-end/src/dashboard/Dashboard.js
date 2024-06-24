@@ -8,15 +8,21 @@ import {
 } from "../utils/api";
 import "./Dashboard.css";
 
+// Custom hook to parse URL query parameters
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
+/**
+ * Dashboard component displaying reservations and tables for a specific date.
+ * @returns {JSX.Element} The rendered Dashboard component.
+ */
 function Dashboard() {
   const history = useHistory();
   const query = useQuery();
   let date = query.get("date");
 
+  // Function to get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
     const offset = today.getTimezoneOffset();
@@ -24,14 +30,17 @@ function Dashboard() {
     return today.toISOString().split("T")[0];
   };
 
+  // Ensure date is in correct format
   if (!date) {
     date = getTodayDate();
   } else {
-    date = new Date(date).toISOString().split("T")[0]; // Ensure date is in correct format
+    date = new Date(date).toISOString().split("T")[0];
   }
+
   const [reservations, setReservations] = useState([]);
   const [tables, setTables] = useState([]);
 
+  // Load dashboard data
   const loadDashboard = useCallback(async () => {
     console.log("Loading dashboard for date:", date);
     try {
@@ -49,6 +58,7 @@ function Dashboard() {
     loadDashboard();
   }, [loadDashboard]);
 
+  // Handlers for navigating through dates
   const handlePrevious = () => {
     const prevDate = new Date(date);
     prevDate.setDate(prevDate.getDate() - 1);
@@ -66,6 +76,7 @@ function Dashboard() {
     history.push(`/dashboard?date=${nextDate.toISOString().split("T")[0]}`);
   };
 
+  // Handler for finishing a table
   const handleFinish = async (table_id) => {
     if (
       window.confirm(
@@ -81,6 +92,7 @@ function Dashboard() {
     }
   };
 
+  // Handler for canceling a reservation
   const handleCancelReservation = async (reservation_id) => {
     if (
       window.confirm(
@@ -96,6 +108,7 @@ function Dashboard() {
     }
   };
 
+  // Function to format date string into a readable format (e.g. "Sunday, June 23, 2024")
   const formatDate = (dateString) => {
     const options = {
       weekday: "long",
@@ -144,31 +157,27 @@ function Dashboard() {
                     Status: {reservation.status}
                   </p>
                   {reservation.status === "booked" && (
-                    <>
-                      <div className="reservation-table-button-container">
-                        <Link
-                          to={`/reservations/${reservation.reservation_id}/seat`}
-                        >
-                          <button className="res-tbl-btn">Seat</button>
-                        </Link>
-                        <Link
-                          to={`/reservations/${reservation.reservation_id}/edit`}
-                        >
-                          <button className="res-tbl-btn">Edit</button>
-                        </Link>
-                        <button
-                          className="res-tbl-btn"
-                          data-reservation-id-cancel={
-                            reservation.reservation_id
-                          }
-                          onClick={() =>
-                            handleCancelReservation(reservation.reservation_id)
-                          }
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </>
+                    <div className="reservation-table-button-container">
+                      <Link
+                        to={`/reservations/${reservation.reservation_id}/seat`}
+                      >
+                        <button className="res-tbl-btn">Seat</button>
+                      </Link>
+                      <Link
+                        to={`/reservations/${reservation.reservation_id}/edit`}
+                      >
+                        <button className="res-tbl-btn">Edit</button>
+                      </Link>
+                      <button
+                        className="res-tbl-btn"
+                        data-reservation-id-cancel={reservation.reservation_id}
+                        onClick={() =>
+                          handleCancelReservation(reservation.reservation_id)
+                        }
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}

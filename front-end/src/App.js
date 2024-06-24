@@ -11,18 +11,13 @@ function App() {
     <Router>
       <Layout>
         <Switch>
-          <Route exact path="/">
-            <Dashboard />
-          </Route>
-          <Route path="/reservations/new">
-            <ReservationForm />
-          </Route>
-          <Route path="/reservations">
-            <ReservationList loadOnMount={true} />
-          </Route>
-          <Route>
-            <NotFound />
-          </Route>
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/reservations/new" component={ReservationForm} />
+          <Route
+            path="/reservations"
+            render={() => <ReservationList loadOnMount={true} />}
+          />
+          <Route component={NotFound} />
         </Switch>
       </Layout>
     </Router>

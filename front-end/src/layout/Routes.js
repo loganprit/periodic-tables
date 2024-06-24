@@ -6,27 +6,25 @@ import SeatReservation from "../reservations/SeatReservation";
 import TableForm from "../tables/TableForm";
 import SearchReservations from "../reservations/SearchReservations";
 
+/**
+ * Defines the main routes of the application.
+ * @returns {JSX.Element} The routes for the application.
+ */
 function Routes() {
   return (
     <Switch>
-      <Route exact path="/dashboard">
-        <Dashboard />
-      </Route>
-      <Route path="/reservations/new">
-        <ReservationForm />
-      </Route>
-      <Route path="/reservations/:reservation_id/seat">
-        <SeatReservation />
-      </Route>
-      <Route path="/reservations/:reservation_id/edit">
-        <ReservationForm />
-      </Route>
-      <Route path="/tables/new">
-        <TableForm />
-      </Route>
-      <Route path="/search">
-        <SearchReservations />
-      </Route>
+      <Route exact path="/dashboard" component={Dashboard} />
+      <Route path="/reservations/new" component={ReservationForm} />
+      <Route
+        path="/reservations/:reservation_id/seat"
+        component={SeatReservation}
+      />
+      <Route
+        path="/reservations/:reservation_id/edit"
+        component={ReservationForm}
+      />
+      <Route path="/tables/new" component={TableForm} />
+      <Route path="/search" component={SearchReservations} />
     </Switch>
   );
 }

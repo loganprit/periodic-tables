@@ -3,6 +3,10 @@ import { useHistory, useParams } from "react-router-dom";
 import axiosInstance from "../utils/api";
 import "./SeatReservation.css";
 
+/**
+ * SeatReservation component for seating a reservation at a table.
+ * @returns {JSX.Element} The rendered SeatReservation component.
+ */
 function SeatReservation() {
   const history = useHistory();
   const { reservation_id } = useParams();
@@ -62,21 +66,13 @@ function SeatReservation() {
     }
 
     try {
-      console.log(
-        `Attempting to seat reservation ${reservation_id} at table ${selectedTable}`
-      );
-      const response = await axiosInstance.put(
-        `/tables/${selectedTable}/seat`,
-        {
-          data: { reservation_id },
-        }
-      );
-      console.log("API Response:", response.data);
+      await axiosInstance.put(`/tables/${selectedTable}/seat`, {
+        data: { reservation_id },
+      });
       history.push(`/dashboard?date=${reservation.reservation_date}`);
     } catch (error) {
       console.error("Error seating reservation:", error);
       if (error.response) {
-        console.error("Error response data:", error.response.data);
         setError(
           error.response.data.error ||
             "An error occurred while seating the reservation."

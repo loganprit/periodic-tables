@@ -1,6 +1,12 @@
 import React from "react";
 import "./Reservation.css";
 
+/**
+ * Component to display reservation details.
+ * @param {Object} props - Component properties.
+ * @param {Object} props.reservation - Reservation object containing details to display.
+ * @returns {JSX.Element} The rendered Reservation component.
+ */
 function Reservation({ reservation }) {
   return (
     <div className="reservation-container">

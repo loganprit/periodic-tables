@@ -7,6 +7,7 @@ const {
 } = require("../utils/dateValidation");
 const { validateReservationTime } = require("../utils/timeValidation");
 
+// Middleware function to validate reservation data
 function validateReservationData(req, res, next) {
   const { data = {} } = req.body;
   const requiredFields = [
@@ -53,7 +54,6 @@ function validateReservationData(req, res, next) {
   }
 
   const dateValidationError = validateReservationDate(data.reservation_date);
-
   if (dateValidationError) {
     return next({
       status: 400,
@@ -65,7 +65,6 @@ function validateReservationData(req, res, next) {
     data.reservation_date,
     data.reservation_time
   );
-
   if (timeValidationError) {
     return next({
       status: 400,
@@ -76,6 +75,7 @@ function validateReservationData(req, res, next) {
   next();
 }
 
+// Create a new reservation
 async function create(req, res, next) {
   const { data } = req.body;
   if (data.status && data.status !== "booked") {
@@ -85,7 +85,7 @@ async function create(req, res, next) {
     });
   }
   try {
-    const newData = { ...data, status: "booked" }; // Ensure the status is always booked on creation
+    const newData = { ...data, status: "booked" };
     const createdData = await service.create(newData);
     res.status(201).json({ data: createdData });
   } catch (error) {
@@ -93,18 +93,18 @@ async function create(req, res, next) {
   }
 }
 
+// Get a list of reservations
 async function list(req, res, next) {
   const { date, mobile_number } = req.query;
-  console.log("Fetching reservations for date:", date);
   try {
     const data = await service.list(date, mobile_number);
-    console.log("Reservations found:", data.length);
     res.json({ data });
   } catch (error) {
     next(error);
   }
 }
 
+// Get a single reservation by ID
 async function read(req, res, next) {
   const { reservation_id } = req.params;
   try {
@@ -119,6 +119,7 @@ async function read(req, res, next) {
   }
 }
 
+// Seat a reservation at a table
 async function seat(req, res, next) {
   const { reservation_id } = req.params;
   const { table_id } = req.body.data;
@@ -130,6 +131,7 @@ async function seat(req, res, next) {
   }
 }
 
+// Update the status of a reservation
 async function updateStatus(req, res, next) {
   const { reservation_id } = req.params;
   const { status } = req.body.data;
@@ -161,6 +163,7 @@ async function updateStatus(req, res, next) {
   }
 }
 
+// Finish a reservation at a table
 async function finish(req, res, next) {
   const { table_id } = req.params;
   try {
@@ -171,6 +174,7 @@ async function finish(req, res, next) {
   }
 }
 
+// Update a reservation
 async function update(req, res, next) {
   const { reservation_id } = req.params;
   const { data } = req.body;

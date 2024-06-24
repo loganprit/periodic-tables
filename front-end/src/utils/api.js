@@ -4,9 +4,15 @@ import formatReservationTime from "./format-reservation-time";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:5001";
-
 const axiosInstance = axios.create({ baseURL: API_BASE_URL });
 
+/**
+ * Fetches JSON data from the specified URL.
+ * @param {string} url - The URL to fetch data from.
+ * @param {Object} options - The fetch options.
+ * @param {any} onCancel - The value to return if the fetch is aborted.
+ * @returns {Promise<any>} The fetched data.
+ */
 async function fetchJson(url, options, onCancel) {
   try {
     const response = await fetch(url, options);
@@ -20,13 +26,18 @@ async function fetchJson(url, options, onCancel) {
     return payload.data;
   } catch (error) {
     if (error.name !== "AbortError") {
-      console.error(error.stack);
       throw error;
     }
     return Promise.resolve(onCancel);
   }
 }
 
+/**
+ * Lists reservations based on the provided parameters.
+ * @param {Object} params - The query parameters for listing reservations.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any[]>} The list of reservations.
+ */
 export async function listReservations(params = {}, signal) {
   const url = new URL(`${API_BASE_URL}/reservations`);
   Object.entries(params).forEach(([key, value]) => {
@@ -41,10 +52,14 @@ export async function listReservations(params = {}, signal) {
   )
     .then(formatReservationDate)
     .then(formatReservationTime);
-  console.log("Fetched Reservations:", reservations);
   return reservations || [];
 }
 
+/**
+ * Lists all tables.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any[]>} The list of tables.
+ */
 export async function listTables(signal) {
   return await fetchJson(
     `${API_BASE_URL}/tables`,
@@ -53,6 +68,12 @@ export async function listTables(signal) {
   );
 }
 
+/**
+ * Sends a DELETE request to the specified URL.
+ * @param {string} url - The URL to send the DELETE request to.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The response data.
+ */
 async function deleteRequest(url, signal) {
   const options = {
     method: "DELETE",
@@ -62,11 +83,24 @@ async function deleteRequest(url, signal) {
   return await fetchJson(url, options);
 }
 
+/**
+ * Marks a table as finished.
+ * @param {number} table_id - The ID of the table to mark as finished.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The response data.
+ */
 export async function finishTable(table_id, signal) {
   const url = new URL(`${API_BASE_URL}/tables/${table_id}/seat`);
   return await deleteRequest(url, signal);
 }
 
+/**
+ * Updates the status of a reservation.
+ * @param {number} reservation_id - The ID of the reservation to update.
+ * @param {string} status - The new status of the reservation.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The response data.
+ */
 export async function updateReservationStatus(reservation_id, status, signal) {
   const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}/status`);
   const options = {
@@ -78,6 +112,12 @@ export async function updateReservationStatus(reservation_id, status, signal) {
   return await fetchJson(url, options);
 }
 
+/**
+ * Retrieves a reservation by its ID.
+ * @param {number} reservation_id - The ID of the reservation to retrieve.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The reservation data.
+ */
 export async function getReservation(reservation_id, signal) {
   const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
   return await fetchJson(
@@ -89,6 +129,13 @@ export async function getReservation(reservation_id, signal) {
     .then(formatReservationTime);
 }
 
+/**
+ * Updates a reservation.
+ * @param {number} reservation_id - The ID of the reservation to update.
+ * @param {Object} data - The updated reservation data.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The response data.
+ */
 export async function updateReservation(reservation_id, data, signal) {
   const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
   const options = {
@@ -100,6 +147,12 @@ export async function updateReservation(reservation_id, data, signal) {
   return await fetchJson(url, options);
 }
 
+/**
+ * Cancels a reservation.
+ * @param {number} reservation_id - The ID of the reservation to cancel.
+ * @param {AbortSignal} signal - The abort signal.
+ * @returns {Promise<any>} The response data.
+ */
 export async function cancelReservation(reservation_id, signal) {
   const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
   return await deleteRequest(url, signal);

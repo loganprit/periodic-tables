@@ -74,7 +74,6 @@ function finish(table_id) {
       .where({ reservation_id })
       .update({ status: "finished" });
 
-    // Return the updated table data
     return trx("tables").where({ table_id }).first();
   });
 }

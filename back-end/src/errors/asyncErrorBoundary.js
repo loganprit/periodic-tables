@@ -1,3 +1,4 @@
+// Express API Async Error Boundary handler
 function asyncErrorBoundary(delegate, defaultStatus) {
   return (request, response, next) => {
     Promise.resolve()

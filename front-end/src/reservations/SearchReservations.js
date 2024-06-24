@@ -3,6 +3,10 @@ import { listReservations } from "../utils/api";
 import ReservationList from "./ReservationList";
 import "./SearchReservations.css";
 
+/**
+ * SearchReservations component for searching reservations by mobile number.
+ * @returns {JSX.Element} The rendered SearchReservations component.
+ */
 function SearchReservations() {
   const [mobileNumber, setMobileNumber] = useState("");
   const [reservations, setReservations] = useState([]);
@@ -21,7 +25,6 @@ function SearchReservations() {
       setReservations(data);
     } catch (error) {
       setError("Must enter a valid phone number.");
-      // setError(error.message);
     }
   };
 

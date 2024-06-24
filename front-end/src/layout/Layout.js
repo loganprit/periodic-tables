@@ -7,6 +7,7 @@ import "./Layout.css";
 
 /**
  * Defines the main layout of the application.
+ * Uses media queries to adjust layout based on screen size.
  * @returns {JSX.Element}
  */
 function Layout() {

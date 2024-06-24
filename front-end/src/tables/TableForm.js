@@ -3,6 +3,10 @@ import { useHistory } from "react-router-dom";
 import axiosInstance from "../utils/api";
 import "./TableForm.css";
 
+/**
+ * TableForm component for creating a new table.
+ * @returns {JSX.Element} The rendered TableForm component.
+ */
 function TableForm() {
   const history = useHistory();
   const [formData, setFormData] = useState({
