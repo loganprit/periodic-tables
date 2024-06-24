@@ -27,28 +27,28 @@ For detailed API documentation, please refer to the respective backend and front
 ### Desktop
 
 - **Home Page**
-  <img src="/images/desktop-home.jpg" alt="Home Page - Desktop" width="600">
+  ![Home Page - Desktop](/images/desktop-home.jpg)
 - **Dashboard Page**
-  <img src="/images/desktop-dashboard.jpg" alt="Dashboard Page - Desktop" width="600">
+  ![Dashboard Page - Desktop](/images/desktop-dashboard.jpg)
 - **Search Page**
-  <img src="/images/desktop-search.jpg" alt="Search Page - Desktop" width="600">
+  ![Search Page - Desktop](/images/desktop-search.jpg)
 - **New Reservation Page**
-  <img src="/images/desktop-new-reservation.jpg" alt="New Reservation Page - Desktop" width="600">
+  ![New Reservation Page - Desktop](/images/desktop-new-reservation.jpg)
 - **New Table Page**
-  <img src="/images/desktop-new-table.jpg" alt="New Table Page - Desktop" width="600">
+  ![New Table Page - Desktop](/images/desktop-new-table.jpg)
 
 ### Mobile
 
 - **Home Page**
-  <img src="/images/mobile-home.jpg" alt="Home Page - Mobile" width="300">
+  ![Home Page - Mobile](/images/mobile-home.jpg)
 - **Dashboard Page**
-  <img src="/images/mobile-dashboard.jpg" alt="Dashboard Page - Mobile" width="300">
+  ![Dashboard Page - Mobile](/images/mobile-dashboard.jpg)
 - **Search Page**
-  <img src="/images/mobile-search.jpg" alt="Search Page - Mobile" width="300">
+  ![Search Page - Mobile](/images/mobile-search.jpg)
 - **New Reservation Page**
-  <img src="/images/mobile-new-reservation.jpg" alt="New Reservation Page - Mobile" width="300">
+  ![New Reservation Page - Mobile](/images/mobile-new-reservation.jpg)
 - **New Table Page**
-  <img src="/images/mobile-new-table.jpg" alt="New Table Page - Mobile" width="300">
+  ![New Table Page - Mobile](/images/mobile-new-table.jpg)
 
 ## Technology Stack
 
