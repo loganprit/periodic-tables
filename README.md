@@ -79,5 +79,5 @@ For detailed API documentation, please refer to the respective backend and front
 
 ## Additional Notes
 
-- Future improvements include implementing smooth transition animations between pages and the ability to search by last name.
+- Future improvements include implementing smooth transition animations between pages, skeleton loading and the ability to search by last name.
 - Credits to the Thinkful team for guidance and support.
