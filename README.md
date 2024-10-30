@@ -55,7 +55,7 @@ For detailed API documentation, please refer to the respective backend and front
 - **Frontend**: React, CSS
 - **Backend**: Node.js, Express.js, Knex.js
 - **Database**: PostgreSQL
-- **Deployment**: Vercel (for frontend), Heroku (for backend)
+- **Deployment**: Render
 
 ## Installation Instructions
 
