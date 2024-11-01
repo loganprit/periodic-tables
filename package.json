@@ -47,8 +47,5 @@
   },
   "keywords": [],
   "author": "Logan Pritchett",
-  "license": "UNLICENSED",
-  "dependencies": {
-    "react-scripts": "^5.0.1"
-  }
+  "license": "UNLICENSED"
 }

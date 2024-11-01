@@ -10,24 +10,25 @@
   },
   "private": true,
   "engines": {
-    "node": "16"
+    "node": ">=16"
   },
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.9",
-    "@testing-library/react": "^11.2.3",
-    "@testing-library/user-event": "^12.6.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-responsive": "^10.0.0",
-    "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
+    "@svgr/webpack": "^8.1.0",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
+    "axios": "^1.6.7",
+    "node-fetch": "^3.3.2",
+    "postcss": "^8.4.35",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router": "^6.22.3",
+    "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
-    "react-spring": "^9.7.3",
-    "sisteransi": "^1.0.5",
-    "tapable": "^2.2.1",
-    "type-check": "^0.4.0",
-    "typescript": "^4.9.5",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^3.5.2",
+    "ws": "^8.16.0",
+    "nth-check": "^2.1.1",
+    "svgo": "^3.2.0"
   },
   "scripts": {
     "build": "react-scripts build",
@@ -68,15 +69,14 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.8.6",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
     "@types/puppeteer": "^7.0.4",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
     "@types/react-router-dom": "^5.3.3",
-    "cross-fetch": "^3.0.6",
-    "jest-puppeteer": "^6.0.0",
-    "npm-run-all": "^4.1.5",
-    "puppeteer": "^10.4.0"
+    "cross-fetch": "^4.0.0",
+    "jest-puppeteer": "^10.0.1",
+    "puppeteer": "^22.3.0"
   }
 }
