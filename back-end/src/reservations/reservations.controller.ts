@@ -50,7 +50,7 @@ function validateReservationData(
     return;
   }
 
-  if (!isValidDate(data.reservation_date)) {
+  if (!isValidDate(data.reservation_date as string)) {
     next({
       status: 400,
       message: "Reservation must include a valid reservation_date",
@@ -58,7 +58,7 @@ function validateReservationData(
     return;
   }
 
-  if (!isValidTime(data.reservation_time)) {
+  if (!isValidTime(data.reservation_time as string)) {
     next({
       status: 400,
       message: "Reservation must include a valid reservation_time",
@@ -66,7 +66,7 @@ function validateReservationData(
     return;
   }
 
-  const dateValidationError = validateReservationDate(data.reservation_date);
+  const dateValidationError = validateReservationDate(data.reservation_date as string);
   if (dateValidationError) {
     next({
       status: 400,
@@ -76,8 +76,8 @@ function validateReservationData(
   }
 
   const timeValidationError = validateReservationTime(
-    data.reservation_date,
-    data.reservation_time
+    data.reservation_date as string,
+    data.reservation_time as string
   );
   if (timeValidationError) {
     next({
