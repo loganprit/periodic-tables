@@ -1,7 +1,7 @@
 import { NextFunction } from "express";
 import { CustomRequest, CustomResponse, ReservationData } from "../types/application";
 import { APIError } from "../types/errors";
-import * as service from "./reservations.service";
+import { reservationsService as service } from "./reservations.service";
 import asyncErrorBoundary from "../errors/asyncErrorBoundary";
 import {
   isValidDate,

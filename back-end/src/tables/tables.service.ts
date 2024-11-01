@@ -1,45 +1,64 @@
-const knex = require("../db/connection");
+import { Knex } from "knex";
+import { TableData, ReservationData } from "../types/application";
+import { APIError } from "../types/errors";
+import knex from "../db/connection";
 
-function create(table) {
+/**
+ * Creates a new table in the database
+ * @param table - The table data to insert
+ * @returns Promise resolving to the created table
+ */
+function create(table: Omit<TableData, "table_id">): Promise<TableData[]> {
   return knex("tables").insert(table).returning("*");
 }
 
-function list() {
+/**
+ * Retrieves all tables from the database
+ * @returns Promise resolving to array of tables
+ */
+function list(): Promise<TableData[]> {
   return knex("tables").select("*").orderBy("table_name");
 }
 
-async function seat(table_id, reservation_id) {
-  return knex.transaction(async (trx) => {
+/**
+ * Assigns a reservation to a table
+ * @param table_id - The ID of the table
+ * @param reservation_id - The ID of the reservation
+ * @returns Promise resolving to the updated table
+ */
+async function seat(
+  table_id: number,
+  reservation_id: number
+): Promise<TableData> {
+  return knex.transaction(async (trx: Knex.Transaction) => {
     const table = await trx("tables").where({ table_id }).first();
 
     if (!table) {
-      throw { status: 404, message: "Table not found" };
+      throw new APIError(404, "Table not found");
     }
 
     if (table.capacity < 1) {
-      throw { status: 400, message: "Table capacity must be at least 1" };
+      throw new APIError(400, "Table capacity must be at least 1");
     }
 
     if (table.reservation_id) {
-      throw { status: 400, message: "Table is occupied" };
+      throw new APIError(400, "Table is occupied");
     }
 
-    const reservation = await trx("reservations")
+    const reservation: ReservationData = await trx("reservations")
       .where({ reservation_id })
       .first();
+
     if (!reservation) {
-      throw {
-        status: 404,
-        message: `Reservation ${reservation_id} does not exist`,
-      };
+      throw new APIError(404, `Reservation ${reservation_id} does not exist`);
     }
 
     if (table.capacity < reservation.people) {
-      throw { status: 400, message: "Table does not have sufficient capacity" };
+      throw new APIError(400, "Table does not have sufficient capacity");
     }
 
     if (reservation.status === "seated") {
-      throw { status: 400, message: "Reservation is already seated" };
+      throw new APIError(400, "Reservation is already seated");
     }
 
     // Update table with reservation_id
@@ -54,18 +73,28 @@ async function seat(table_id, reservation_id) {
   });
 }
 
-function read(table_id) {
+/**
+ * Retrieves a specific table by ID
+ * @param table_id - The ID of the table to retrieve
+ * @returns Promise resolving to the table data
+ */
+function read(table_id: number): Promise<TableData> {
   return knex("tables").select("*").where({ table_id }).first();
 }
 
-function finish(table_id) {
-  return knex.transaction(async (trx) => {
-    const table = await trx("tables").where({ table_id }).first();
+/**
+ * Marks a table as finished and updates the reservation status
+ * @param table_id - The ID of the table to finish
+ * @returns Promise resolving to the updated table
+ */
+async function finish(table_id: number): Promise<TableData> {
+  return knex.transaction(async (trx: Knex.Transaction) => {
+    const table: TableData = await trx("tables").where({ table_id }).first();
 
     const reservation_id = table.reservation_id;
 
     if (!reservation_id) {
-      throw new Error("No reservation to finish for this table");
+      throw new APIError(400, "No reservation to finish for this table");
     }
 
     await trx("tables").where({ table_id }).update({ reservation_id: null });
@@ -78,7 +107,7 @@ function finish(table_id) {
   });
 }
 
-module.exports = {
+export const tablesService = {
   create,
   list,
   seat,

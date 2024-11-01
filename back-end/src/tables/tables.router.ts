@@ -1,11 +1,18 @@
-const router = require("express").Router();
-const controller = require("./tables.controller");
+import { Router } from "express";
+import { tablesController } from "./tables.controller";
 
-router.route("/").get(controller.list).post(controller.create);
-router.route("/:table_id/seat").put(controller.seat);
-router
-  .route("/:table_id/seat")
-  .put(controller.seat)
-  .delete(controller.finishTable);
+/**
+ * Router for handling table-related endpoints
+ */
+const router: Router = Router();
 
-module.exports = router;
+// Base routes for tables
+router.route("/").get(tablesController.list).post(tablesController.create);
+
+// Routes for specific table operations
+router.route("/:table_id/seat").put(tablesController.seat);
+
+// Route for finishing a table reservation
+router.route("/:table_id/seat").put(tablesController.seat).delete(tablesController.finish);
+
+export default router;
