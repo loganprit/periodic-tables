@@ -1,12 +1,14 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      DATABASE_URL?: string;
-      DATABASE_URL_DEVELOPMENT?: string;
-      DATABASE_URL_TEST?: string;
-      DATABASE_URL_PREVIEW?: string;
-      DEBUG?: string;
-      NODE_ENV?: "development" | "test" | "preview" | "production";
+      DATABASE_URL: string;
+      DATABASE_URL_DEVELOPMENT: string;
+      DATABASE_URL_TEST: string;
+      DATABASE_URL_PREVIEW: string;
+      PORT: string;
+      DEBUG: string;
+      LOG_LEVEL: "error" | "warn" | "info" | "debug";
+      NODE_ENV: "development" | "test" | "preview" | "production";
     }
   }
 }
