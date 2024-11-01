@@ -1,4 +1,10 @@
-module.exports = {
+import type { Config } from "@jest/types";
+
+/**
+ * Jest configuration for TypeScript testing environment
+ * @see https://jestjs.io/docs/configuration
+ */
+const config: Config.InitialOptions = {
   preset: "ts-jest",
   testEnvironment: "node",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
@@ -10,3 +16,5 @@ module.exports = {
   coverageDirectory: "../coverage",
   testTimeout: 20000,
 };
+
+export default config;
