@@ -313,6 +313,7 @@ async function validateDateTime(
 export const reservationsController = {
   create: [
     asyncErrorBoundary(hasRequiredFields),
+    asyncErrorBoundary(validateDateTime),
     asyncErrorBoundary(validateStatus),
     asyncErrorBoundary(create),
   ],
@@ -321,5 +322,9 @@ export const reservationsController = {
   seat: asyncErrorBoundary(seat),
   updateStatus: asyncErrorBoundary(updateStatus),
   finish: asyncErrorBoundary(finish),
-  update: [asyncErrorBoundary(hasRequiredFields), asyncErrorBoundary(update)],
+  update: [
+    asyncErrorBoundary(hasRequiredFields),
+    asyncErrorBoundary(validateDateTime),
+    asyncErrorBoundary(update)
+  ],
 };
