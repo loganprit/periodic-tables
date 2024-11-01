@@ -1,17 +1,19 @@
-const path = require("path");
+import path from "path";
+import dotenv from "dotenv";
+import express, { Application } from "express";
+import cors from "cors";
 
-require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+import { errorHandler } from "./errors/errorHandler";
+import { notFound } from "./errors/notFound";
+import { reservationsRouter } from "./reservations/reservations.router";
+import { tablesRouter } from "./tables/tables.router";
 
-const express = require("express");
-const cors = require("cors");
+// Configure environment variables
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
-const errorHandler = require("./errors/errorHandler");
-const notFound = require("./errors/notFound");
-const reservationsRouter = require("./reservations/reservations.router");
-const tablesRouter = require("./tables/tables.router");
+const app: Application = express();
 
-const app = express();
-
+// Configure CORS middleware with type-safe options
 app.use(
   cors({
     origin: "*",
@@ -19,12 +21,16 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Parse JSON request bodies
 app.use(express.json());
 
+// Mount routers
 app.use("/reservations", reservationsRouter);
 app.use("/tables", tablesRouter);
 
+// Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

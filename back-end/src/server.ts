@@ -1,19 +1,31 @@
-const { PORT = 5001 } = process.env;
+import { config } from "dotenv";
+import type { Knex } from "knex";
+import app from "./app";
+import knexInstance from "./db/connection";
 
-const app = require("./app");
-const knex = require("./db/connection");
+// Load environment variables
+config();
 
-knex.migrate
-  .latest()
-  .then((migrations) => {
-    console.log("migrations", migrations);
-    app.listen(PORT, listener);
-  })
-  .catch((error) => {
-    console.error(error);
-    knex.destroy();
-  });
+const PORT: number = Number(process.env.PORT) || 5001;
 
-function listener() {
-  console.log(`Listening on Port ${PORT}!`);
+/**
+ * Server startup function that initializes database and starts listening
+ * @throws {Error} If database migration or server startup fails
+ */
+async function startServer(): Promise<void> {
+  try {
+    const migrations: readonly Knex.Migration[] = await knexInstance.migrate.latest();
+    console.log("Database migrations completed:", migrations);
+    
+    app.listen(PORT, () => {
+      console.log(`Server is listening on Port ${PORT}!`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    await knexInstance.destroy();
+    process.exit(1);
+  }
 }
+
+// Initialize server
+startServer();
