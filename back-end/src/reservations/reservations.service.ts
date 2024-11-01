@@ -1,13 +1,21 @@
-const knex = require("../db/connection");
+import { Knex } from "knex";
+import { ReservationData, TableData } from "../types/application";
+import knex from "../db/connection";
 
-function create(reservation) {
-  return knex("reservations")
+/**
+ * Creates a new reservation
+ */
+async function create(reservation: ReservationData): Promise<ReservationData> {
+  const createdRecords = await knex("reservations")
     .insert(reservation)
-    .returning("*")
-    .then((createdRecords) => createdRecords[0]);
+    .returning("*");
+  return createdRecords[0];
 }
 
-function list(date, mobile_number) {
+/**
+ * Lists reservations by date or mobile number
+ */
+function list(date?: string, mobile_number?: string): Promise<ReservationData[]> {
   if (mobile_number) {
     return search(mobile_number);
   }
@@ -18,12 +26,18 @@ function list(date, mobile_number) {
     .orderBy("reservation_time");
 }
 
-function read(reservation_id) {
+/**
+ * Reads a single reservation by ID
+ */
+function read(reservation_id: number): Promise<ReservationData> {
   return knex("reservations").select("*").where({ reservation_id }).first();
 }
 
-function seat(reservation_id, table_id) {
-  return knex.transaction(async (trx) => {
+/**
+ * Seats a reservation at a table
+ */
+async function seat(reservation_id: number, table_id: number): Promise<ReservationData> {
+  return knex.transaction(async (trx: Knex.Transaction) => {
     const reservation = await trx("reservations")
       .where({ reservation_id })
       .first();
@@ -45,18 +59,26 @@ function seat(reservation_id, table_id) {
   });
 }
 
-function updateStatus(reservation_id, status) {
-  return knex("reservations")
+/**
+ * Updates the status of a reservation
+ */
+async function updateStatus(
+  reservation_id: number,
+  status: ReservationData["status"]
+): Promise<ReservationData> {
+  const updatedRecords = await knex("reservations")
     .where({ reservation_id })
     .update({ status })
-    .returning("*")
-    .then((updatedRecords) => updatedRecords[0]);
+    .returning("*");
+  return updatedRecords[0];
 }
 
-function finish(table_id) {
-  return knex.transaction(async (trx) => {
-    const table = await trx("tables").where({ table_id }).first();
-
+/**
+ * Finishes a reservation and clears the table
+ */
+async function finish(table_id: number): Promise<ReservationData[]> {
+  return knex.transaction(async (trx: Knex.Transaction) => {
+    const table = await trx("tables").where({ table_id }).first() as TableData;
     const reservation_id = table.reservation_id;
 
     if (!reservation_id) {
@@ -72,7 +94,10 @@ function finish(table_id) {
   });
 }
 
-function search(mobile_number) {
+/**
+ * Searches for reservations by mobile number
+ */
+function search(mobile_number: string): Promise<ReservationData[]> {
   return knex("reservations")
     .select("*")
     .whereRaw(
@@ -82,13 +107,19 @@ function search(mobile_number) {
     .orderBy("reservation_date");
 }
 
-function update(reservation_id, updatedReservation) {
+/**
+ * Updates a reservation
+ */
+function update(
+  reservation_id: number,
+  updatedReservation: ReservationData
+): Promise<ReservationData[]> {
   return knex("reservations")
     .where({ reservation_id })
     .update(updatedReservation, "*");
 }
 
-module.exports = {
+export const reservationsService = {
   create,
   list,
   read,
