@@ -6,6 +6,10 @@ import { reservationsController } from "./reservations.controller";
  */
 const router: Router = Router();
 
+// Search route must come before parameter routes to avoid being treated as an ID
+router.route("/search")
+  .get(reservationsController.list);
+
 // Base routes for reservations
 router.route("/")
   .post(reservationsController.create)
@@ -27,9 +31,5 @@ router.route("/:reservation_id/status")
 // Route for finishing a table reservation
 router.route("/:table_id/seat")
   .delete(reservationsController.finish);
-
-// Route for searching reservations
-router.route("/search")
-  .get(reservationsController.list);
 
 export default router;

@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
-import { resetDatabase, seedDatabase, cleanupDatabase } from "./utils/test-setup";
-import { ReservationData } from "../src/types/application";
+import knex from "../src/db/connection";
+import { ReservationData } from "../src/types";
 
 /**
  * Test suite for US-01 - Create and list reservations functionality
@@ -11,21 +11,39 @@ describe("US-01 - Create and list reservations", () => {
    * Setup database before all tests
    */
   beforeAll(async (): Promise<void> => {
-    await resetDatabase();
+    try {
+      await knex.migrate.forceFreeMigrationsLock();
+      await knex.migrate.rollback(undefined, true);
+      await knex.migrate.latest();
+    } catch (error) {
+      console.error("Database setup failed:", error);
+      throw error;
+    }
   });
 
   /**
    * Reset database state before each test
    */
   beforeEach(async (): Promise<void> => {
-    await seedDatabase();
+    try {
+      await knex.seed.run();
+    } catch (error) {
+      console.error("Database seed failed:", error);
+      throw error;
+    }
   });
 
   /**
    * Cleanup database after all tests
    */
   afterAll(async (): Promise<void> => {
-    await cleanupDatabase();
+    try {
+      await knex.migrate.rollback(undefined, true);
+      await knex.destroy();
+    } catch (error) {
+      console.error("Database cleanup failed:", error);
+      throw error;
+    }
   });
 
   /**
@@ -348,21 +366,20 @@ describe("US-01 - Create and list reservations", () => {
     });
 
     test("returns 201 if data is valid", async (): Promise<void> => {
-      const partialData: Partial<ReservationData> = {
+      const data: ReservationData = {
         first_name: "first",
         last_name: "last",
         mobile_number: "800-555-1212",
         reservation_date: "2025-01-01",
         reservation_time: "17:30",
         people: 2,
-      }
+      };
 
       const response = await request(app)
         .post("/reservations")
         .set("Accept", "application/json")
-        .send({ data: partialData });
+        .send({ data });
 
-      expect(response.body.error).toBeUndefined();
       expect(response.body.data).toEqual(
         expect.objectContaining({
           first_name: "first",

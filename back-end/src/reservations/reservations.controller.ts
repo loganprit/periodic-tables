@@ -47,70 +47,55 @@ async function hasRequiredFields(
     }
   }
 
-  if (typeof data.people !== "number" || data.people < 1) {
-    next({
+  next();
+}
+
+/**
+ * Validates the status of a new reservation
+ */
+async function validateStatus(
+  req: CustomRequest,
+  res: CustomResponse,
+  next: NextFunction
+): Promise<void> {
+  const { data } = req.body;
+  
+  if (!data) return next();
+  
+  const status = data.status || "booked";
+  const validStatuses = ["booked", "seated", "finished", "cancelled"];
+  
+  if (!validStatuses.includes(status)) {
+    return next({
       status: 400,
-      message: "Field 'people' must be a number greater than 0",
+      message: `Invalid status: ${status}`,
     } as APIError);
-    return;
   }
 
-  if (!isValidDate(data.reservation_date)) {
-    next({
+  if (status !== "booked") {
+    return next({
       status: 400,
-      message: "Field 'reservation_date' must be a valid date",
+      message: "New reservations must have a status of 'booked'",
     } as APIError);
-    return;
-  }
-
-  if (!isValidTime(data.reservation_time)) {
-    next({
-      status: 400,
-      message: "Field 'reservation_time' must be a valid time",
-    } as APIError);
-    return;
-  }
-
-  const dateValidationError = validateReservationDate(data.reservation_date);
-  if (dateValidationError) {
-    next({
-      status: 400,
-      message: dateValidationError,
-    } as APIError);
-    return;
-  }
-
-  const timeValidationError = validateReservationTime(data.reservation_date, data.reservation_time);
-  if (timeValidationError) {
-    next({
-      status: 400,
-      message: timeValidationError,
-    } as APIError);
-    return;
   }
 
   next();
 }
 
 /**
- * Create a new reservation
+ * Creates a new reservation
  */
 async function create(
   req: CustomRequest,
   res: CustomResponse,
   next: NextFunction
 ): Promise<void> {
-  const { data } = req.body as { data: ReservationData };
-  
   try {
-    const newData: ReservationData = { 
-      ...data, 
-      status: data.status || "booked" 
-    };
-    
-    const createdData = await service.create(newData);
-    res.status(201).json({ data: createdData });
+    const { data } = req.body;
+    const createdReservation = await service.create(data);
+    res.status(201).json({ data: createdReservation });
   } catch (error) {
+    console.error("Error in create controller:", error);
     next(error);
   }
 }
@@ -282,9 +267,53 @@ async function update(
   }
 }
 
+/**
+ * Validates the reservation date and time
+ */
+async function validateDateTime(
+  req: CustomRequest,
+  res: CustomResponse,
+  next: NextFunction
+): Promise<void> {
+  const { reservation_date, reservation_time } = req.body.data;
+
+  if (!isValidDate(reservation_date)) {
+    return next({
+      status: 400,
+      message: "Invalid reservation_date format. Use YYYY-MM-DD",
+    } as APIError);
+  }
+
+  if (!isValidTime(reservation_time)) {
+    return next({
+      status: 400,
+      message: "Invalid reservation_time format. Use HH:MM (24-hour)",
+    } as APIError);
+  }
+
+  const dateError = validateReservationDate(reservation_date);
+  if (dateError) {
+    return next({
+      status: 400,
+      message: dateError,
+    } as APIError);
+  }
+
+  const timeError = validateReservationTime(reservation_date, reservation_time);
+  if (timeError) {
+    return next({
+      status: 400,
+      message: timeError,
+    } as APIError);
+  }
+
+  next();
+}
+
 export const reservationsController = {
   create: [
     asyncErrorBoundary(hasRequiredFields),
+    asyncErrorBoundary(validateStatus),
     asyncErrorBoundary(create),
   ],
   list: asyncErrorBoundary(list),

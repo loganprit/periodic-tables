@@ -6,10 +6,66 @@ import knex from "../db/connection";
  * Creates a new reservation
  */
 async function create(reservation: ReservationData): Promise<ReservationData> {
-  const createdRecords = await knex("reservations")
-    .insert(reservation)
-    .returning("*");
-  return createdRecords[0];
+  try {
+    // Validate the reservation data before insertion
+    if (!reservation) {
+      throw new Error("Reservation data is required");
+    }
+
+    // Format the date and time values for PostgreSQL
+    const formattedReservation = {
+      ...reservation,
+      reservation_date: new Date(reservation.reservation_date).toISOString().split('T')[0],
+      status: reservation.status || "booked",
+    };
+
+    // Log the formatted data for debugging
+    console.log("Formatted reservation data:", formattedReservation);
+
+    // Perform the insert within a transaction with explicit column selection
+    const createdReservation = await knex.transaction(async (trx) => {
+      const [created] = await trx("reservations")
+        .insert({
+          first_name: formattedReservation.first_name,
+          last_name: formattedReservation.last_name,
+          mobile_number: formattedReservation.mobile_number,
+          reservation_date: formattedReservation.reservation_date,
+          reservation_time: formattedReservation.reservation_time,
+          people: formattedReservation.people,
+          status: formattedReservation.status,
+        })
+        .returning([
+          "reservation_id",
+          "first_name",
+          "last_name",
+          "mobile_number",
+          "reservation_date",
+          "reservation_time",
+          "people",
+          "status",
+          "created_at",
+          "updated_at"
+        ]);
+      
+      if (!created) {
+        throw new Error("Failed to create reservation");
+      }
+      
+      return created;
+    });
+
+    // Log the created reservation for debugging
+    console.log("Created reservation:", createdReservation);
+
+    return createdReservation;
+  } catch (error) {
+    console.error("Error creating reservation:", error);
+    // Ensure we're throwing an Error object
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to create reservation");
+  }
 }
 
 /**
