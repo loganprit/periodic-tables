@@ -1,22 +1,29 @@
-const request = require("supertest");
-
-const app = require("../src/app");
-const knex = require("../src/db/connection");
+import request from "supertest";
+import app from "../src/app";
+import knex from "../src/db/connection";
+import { ReservationData } from "../src/types/application";
 
 describe("US-07 - Search reservation by phone number", () => {
-  beforeAll(() => {
-    return knex.migrate
-      .forceFreeMigrationsLock()
-      .then(() => knex.migrate.rollback(null, true))
-      .then(() => knex.migrate.latest());
+  beforeAll(async (): Promise<void> => {
+    await knex.migrate.forceFreeMigrationsLock();
+    await knex.migrate.rollback(undefined, true);
+    await knex.migrate.latest();
   });
 
-  beforeEach(() => {
-    return knex.seed.run();
+  beforeEach(async (): Promise<void> => {
+    await knex.transaction(async (trx) => {
+      await trx.seed.run();
+    });
   });
 
-  afterAll(async () => {
-    return await knex.migrate.rollback(null, true).then(() => knex.destroy());
+  afterAll(async (): Promise<void> => {
+    try {
+      await knex.migrate.rollback(undefined, true);
+      await knex.destroy();
+    } catch (error) {
+      console.error("Database cleanup failed:", error);
+      throw error;
+    }
   });
 
   describe("GET /reservations?mobile_number=...", () => {
@@ -27,6 +34,10 @@ describe("US-07 - Search reservation by phone number", () => {
 
       expect(response.body.error).toBeUndefined();
       expect(response.body.data).toHaveLength(2);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data[0]).toMatchObject<Partial<ReservationData>>({
+        mobile_number: expect.stringMatching(/808/),
+      });
     });
 
     test("returns empty list for non-existent phone number", async () => {
@@ -36,6 +47,7 @@ describe("US-07 - Search reservation by phone number", () => {
 
       expect(response.body.error).toBeUndefined();
       expect(response.body.data).toHaveLength(0);
+      expect(Array.isArray(response.body.data)).toBe(true);
     });
   });
 });

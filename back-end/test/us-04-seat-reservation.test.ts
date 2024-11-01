@@ -1,22 +1,29 @@
-const request = require("supertest");
-
-const app = require("../src/app");
-const knex = require("../src/db/connection");
+import request from "supertest";
+import app from "../src/app";
+import knex from "../src/db/connection";
+import { TableData } from "../src/types/application";
 
 describe("US-04 - Seat reservation", () => {
-  beforeAll(() => {
-    return knex.migrate
-      .forceFreeMigrationsLock()
-      .then(() => knex.migrate.rollback(null, true))
-      .then(() => knex.migrate.latest());
+  beforeAll(async (): Promise<void> => {
+    await knex.migrate.forceFreeMigrationsLock();
+    await knex.migrate.rollback(undefined, true);
+    await knex.migrate.latest();
   });
 
-  beforeEach(() => {
-    return knex.seed.run();
+  beforeEach(async (): Promise<void> => {
+    await knex.transaction(async (trx) => {
+      await trx.seed.run();
+    });
   });
 
-  afterAll(async () => {
-    return await knex.migrate.rollback(null, true).then(() => knex.destroy());
+  afterAll(async (): Promise<void> => {
+    try {
+      await knex.migrate.rollback(undefined, true);
+      await knex.destroy();
+    } catch (error) {
+      console.error("Database cleanup failed:", error);
+      throw error;
+    }
   });
 
   describe("Create and list tables", () => {
@@ -43,7 +50,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 400 if table_name is missing", async () => {
-        const data = {
+        const data: Partial<TableData> = {
           capacity: 1,
         };
 
@@ -57,7 +64,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 400 if table_name is empty", async () => {
-        const data = {
+        const data: TableData = {
           table_name: "",
           capacity: 1,
         };
@@ -72,7 +79,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 400 if table_name is one character", async () => {
-        const data = {
+        const data: TableData = {
           table_name: "A",
           capacity: 1,
         };
@@ -87,7 +94,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 400 if capacity is missing", async () => {
-        const data = {
+        const data: Partial<TableData> = {
           table_name: "table name",
         };
 
@@ -101,7 +108,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 400 if capacity is zero", async () => {
-        const data = {
+        const data: TableData = {
           table_name: "table name",
           capacity: 0,
         };
@@ -131,7 +138,7 @@ describe("US-04 - Seat reservation", () => {
       });
 
       test("returns 201 if table is created", async () => {
-        const data = {
+        const data: TableData = {
           table_name: "table-name",
           capacity: 1,
         };
@@ -179,8 +186,8 @@ describe("US-04 - Seat reservation", () => {
   });
 
   describe("Seat reservation", () => {
-    let barTableOne;
-    let tableOne;
+    let barTableOne: TableData;
+    let tableOne: TableData;
 
     beforeEach(async () => {
       barTableOne = await knex("tables").where("table_name", "Bar #1").first();
@@ -240,6 +247,7 @@ describe("US-04 - Seat reservation", () => {
         expect(response.body.error).toBeUndefined();
         expect(response.status).toBe(200);
       });
+
       test("returns 400 if table does not have sufficient capacity", async () => {
         expect(barTableOne).not.toBeUndefined();
 
@@ -255,7 +263,6 @@ describe("US-04 - Seat reservation", () => {
       test("returns 400 if table is occupied", async () => {
         expect(tableOne).not.toBeUndefined();
 
-        // first, occupy the table
         const occupyResponse = await request(app)
           .put(`/tables/${tableOne.table_id}/seat`)
           .set("Accept", "application/json")
@@ -264,7 +271,6 @@ describe("US-04 - Seat reservation", () => {
         expect(occupyResponse.body.error).toBeUndefined();
         expect(occupyResponse.status).toBe(200);
 
-        // next, try to assign the table to another reservation
         const doubleAssignResponse = await request(app)
           .put(`/tables/${tableOne.table_id}/seat`)
           .set("Accept", "application/json")

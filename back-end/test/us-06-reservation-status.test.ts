@@ -1,27 +1,48 @@
-const request = require("supertest");
+import request from "supertest";
+import app from "../src/app";
+import knex from "../src/db/connection";
+import { ReservationData, TableData } from "../src/types/application";
 
-const app = require("../src/app");
-const knex = require("../src/db/connection");
-
+/**
+ * Test suite for US-06 - Reservation status functionality
+ */
 describe("US-06 - Reservation status", () => {
-  beforeAll(() => {
-    return knex.migrate
-      .forceFreeMigrationsLock()
-      .then(() => knex.migrate.rollback(null, true))
-      .then(() => knex.migrate.latest());
+  beforeAll(async (): Promise<void> => {
+    try {
+      await knex.migrate.forceFreeMigrationsLock();
+      await knex.migrate.rollback(undefined, true);
+      await knex.migrate.latest();
+    } catch (error) {
+      console.error("Database setup failed:", error);
+      throw error;
+    }
   });
 
-  beforeEach(() => {
-    return knex.seed.run();
+  beforeEach(async (): Promise<void> => {
+    try {
+      await knex.seed.run();
+    } catch (error) {
+      console.error("Database seed failed:", error);
+      throw error;
+    }
   });
 
-  afterAll(async () => {
-    return await knex.migrate.rollback(null, true).then(() => knex.destroy());
+  afterAll(async (): Promise<void> => {
+    try {
+      await knex.migrate.rollback(undefined, true);
+      await knex.destroy();
+    } catch (error) {
+      console.error("Database cleanup failed:", error);
+      throw error;
+    }
   });
 
+  /**
+   * Test suite for POST /reservations endpoint
+   */
   describe("POST /reservations", () => {
-    test("returns 201 if status is 'booked'", async () => {
-      const data = {
+    test("returns 201 if status is 'booked'", async (): Promise<void> => {
+      const data: ReservationData = {
         first_name: "first",
         last_name: "last",
         mobile_number: "800-555-1212",
@@ -48,10 +69,10 @@ describe("US-06 - Reservation status", () => {
       expect(response.status).toBe(201);
     });
 
-    test.each(["seated", "finished"])(
+    test.each(["seated", "finished"] as const)(
       "returns 400 if status is '%s'",
-      async (status) => {
-        const data = {
+      async (status: ReservationData["status"]): Promise<void> => {
+        const data: ReservationData = {
           first_name: "first",
           last_name: "last",
           mobile_number: "800-555-1212",
@@ -72,40 +93,43 @@ describe("US-06 - Reservation status", () => {
     );
   });
 
+  /**
+   * Test suite for PUT /reservations/:reservation_id/status endpoint
+   */
   describe("PUT /reservations/:reservation_id/status", () => {
-    let reservationOne;
-    let reservationTwo;
+    let reservationOne: ReservationData;
+    let reservationTwo: ReservationData;
 
-    beforeEach(async () => {
+    beforeEach(async (): Promise<void> => {
       [reservationOne, reservationTwo] = await knex("reservations").orderBy([
         "reservation_date",
         "reservation_time",
       ]);
     });
 
-    test("returns 404 for non-existent reservation_id", async () => {
+    test("returns 404 for non-existent reservation_id", async (): Promise<void> => {
       const response = await request(app)
         .put("/reservations/99/status")
         .set("Accept", "application/json")
-        .send({ data: { status: "seated" } });
+        .send({ data: { status: "seated" as const } });
 
       expect(response.body.error).toContain("99");
       expect(response.status).toBe(404);
     });
 
-    test("returns 400 for unknown status", async () => {
+    test("returns 400 for unknown status", async (): Promise<void> => {
       expect(reservationOne).not.toBeUndefined();
 
       const response = await request(app)
         .put(`/reservations/${reservationOne.reservation_id}/status`)
         .set("Accept", "application/json")
-        .send({ data: { status: "unknown" } });
+        .send({ data: { status: "unknown" as const } });
 
       expect(response.body.error).toContain("unknown");
       expect(response.status).toBe(400);
     });
 
-    test("returns 400 if status is currently finished (a finished reservation cannot be updated)", async () => {
+    test("returns 400 if status is currently finished (a finished reservation cannot be updated)", async (): Promise<void> => {
       expect(reservationOne).not.toBeUndefined();
 
       reservationOne.status = "finished";
@@ -116,15 +140,15 @@ describe("US-06 - Reservation status", () => {
       const response = await request(app)
         .put(`/reservations/${reservationOne.reservation_id}/status`)
         .set("Accept", "application/json")
-        .send({ data: { status: "seated" } });
+        .send({ data: { status: "seated" as const } });
 
       expect(response.body.error).toContain("finished");
       expect(response.status).toBe(400);
     });
 
-    test.each(["booked", "seated", "finished"])(
+    test.each(["booked", "seated", "finished"] as const)(
       "returns 200 for status '%s'",
-      async (status) => {
+      async (status: ReservationData["status"]): Promise<void> => {
         expect(reservationOne).not.toBeUndefined();
 
         const response = await request(app)
@@ -138,19 +162,22 @@ describe("US-06 - Reservation status", () => {
     );
   });
 
+  /**
+   * Test suite for PUT /tables/:table_id/seat endpoint
+   */
   describe("PUT /tables/:table_id/seat", () => {
-    let reservationOne;
-    let tableOne;
-    let tableTwo;
+    let reservationOne: ReservationData;
+    let tableOne: TableData;
+    let tableTwo: TableData;
 
-    beforeEach(async () => {
+    beforeEach(async (): Promise<void> => {
       reservationOne = await knex("reservations")
         .orderBy(["reservation_date", "reservation_time"])
         .first();
       [tableOne, tableTwo] = await knex("tables").orderBy("table_name");
     });
 
-    test("returns 200 and changes reservation status to 'seated'", async () => {
+    test("returns 200 and changes reservation status to 'seated'", async (): Promise<void> => {
       expect(tableOne).not.toBeUndefined();
       expect(reservationOne).not.toBeUndefined();
 
@@ -171,7 +198,7 @@ describe("US-06 - Reservation status", () => {
       expect(reservationResponse.status).toBe(200);
     });
 
-    test("returns 400 if reservation is already 'seated'", async () => {
+    test("returns 400 if reservation is already 'seated'", async (): Promise<void> => {
       expect(tableOne).not.toBeUndefined();
       expect(reservationOne).not.toBeUndefined();
 
@@ -193,18 +220,21 @@ describe("US-06 - Reservation status", () => {
     });
   });
 
+  /**
+   * Test suite for DELETE /tables/:table_id/seat endpoint
+   */
   describe("DELETE /tables/:table_id/seat", () => {
-    let reservationOne;
-    let tableOne;
+    let reservationOne: ReservationData;
+    let tableOne: TableData;
 
-    beforeEach(async () => {
+    beforeEach(async (): Promise<void> => {
       reservationOne = await knex("reservations")
         .orderBy(["reservation_date", "reservation_time"])
         .first();
       tableOne = await knex("tables").orderBy("table_name").first();
     });
 
-    test("returns 200 and changes reservation status to 'finished'", async () => {
+    test("returns 200 and changes reservation status to 'finished'", async (): Promise<void> => {
       expect(tableOne).not.toBeUndefined();
       expect(reservationOne).not.toBeUndefined();
 
@@ -237,18 +267,21 @@ describe("US-06 - Reservation status", () => {
     });
   });
 
+  /**
+   * Test suite for GET /reservations/date=XXXX-XX-XX endpoint
+   */
   describe("GET /reservations/date=XXXX-XX-XX", () => {
-    let reservationOne;
-    let tableOne;
+    let reservationOne: ReservationData;
+    let tableOne: TableData;
 
-    beforeEach(async () => {
+    beforeEach(async (): Promise<void> => {
       reservationOne = await knex("reservations")
         .orderBy(["reservation_date", "reservation_time"])
         .first();
       tableOne = await knex("tables").orderBy("table_name").first();
     });
 
-    test("does not include 'finished' reservations", async () => {
+    test("does not include 'finished' reservations", async (): Promise<void> => {
       expect(tableOne).not.toBeUndefined();
       expect(reservationOne).not.toBeUndefined();
 
@@ -270,23 +303,26 @@ describe("US-06 - Reservation status", () => {
 
       const reservationsResponse = await request(app)
         .get(
-          `/reservations?date=${asDateString(reservationOne.reservation_date)}`
+          `/reservations?date=${reservationOne.reservation_date}`
         )
         .set("Accept", "application/json");
 
       expect(reservationsResponse.body.error).toBeUndefined();
 
       const finishedReservations = reservationsResponse.body.data.filter(
-        (reservation) => reservation.status === "finished"
+        (reservation: ReservationData) => reservation.status === "finished"
       );
 
       expect(finishedReservations).toHaveLength(0);
     });
   });
-});
 
-function asDateString(date) {
-  return `${date.getFullYear().toString(10)}-${(date.getMonth() + 1)
-    .toString(10)
-    .padStart(2, "0")}-${date.getDate().toString(10).padStart(2, "0")}`;
-}
+  /**
+   * Helper function to format date as YYYY-MM-DD string
+   */
+  function asDateString(date: Date): string {
+    return `${date.getFullYear().toString(10)}-${(date.getMonth() + 1)
+      .toString(10)
+      .padStart(2, "0")}-${date.getDate().toString(10).padStart(2, "0")}`;
+  }
+});

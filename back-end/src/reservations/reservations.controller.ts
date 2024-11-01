@@ -11,14 +11,23 @@ import {
 import { validateReservationTime } from "../utils/timeValidation";
 
 /**
- * Middleware function to validate reservation data
+ * Validates that the request body contains all required fields
  */
-function validateReservationData(
+async function hasRequiredFields(
   req: CustomRequest,
   res: CustomResponse,
   next: NextFunction
-): void {
-  const { data = {} } = req.body as { data: Partial<ReservationData> };
+): Promise<void> {
+  const { data } = req.body;
+
+  if (!data) {
+    next({
+      status: 400,
+      message: "Request body must include data object",
+    } as APIError);
+    return;
+  }
+
   const requiredFields = [
     "first_name",
     "last_name",
@@ -26,47 +35,43 @@ function validateReservationData(
     "reservation_date",
     "reservation_time",
     "people",
-  ] as const;
+  ];
 
   for (const field of requiredFields) {
     if (!data[field]) {
       next({
         status: 400,
-        message: `Reservation must include a ${field}`,
+        message: `Field '${field}' is required`,
       } as APIError);
       return;
     }
   }
 
-  if (
-    typeof data.people !== "number" ||
-    Number.isNaN(data.people) ||
-    data.people < 1
-  ) {
+  if (typeof data.people !== "number" || data.people < 1) {
     next({
       status: 400,
-      message: "Reservation must include a valid number of people",
+      message: "Field 'people' must be a number greater than 0",
     } as APIError);
     return;
   }
 
-  if (!isValidDate(data.reservation_date as string)) {
+  if (!isValidDate(data.reservation_date)) {
     next({
       status: 400,
-      message: "Reservation must include a valid reservation_date",
+      message: "Field 'reservation_date' must be a valid date",
     } as APIError);
     return;
   }
 
-  if (!isValidTime(data.reservation_time as string)) {
+  if (!isValidTime(data.reservation_time)) {
     next({
       status: 400,
-      message: "Reservation must include a valid reservation_time",
+      message: "Field 'reservation_time' must be a valid time",
     } as APIError);
     return;
   }
 
-  const dateValidationError = validateReservationDate(data.reservation_date as string);
+  const dateValidationError = validateReservationDate(data.reservation_date);
   if (dateValidationError) {
     next({
       status: 400,
@@ -75,10 +80,7 @@ function validateReservationData(
     return;
   }
 
-  const timeValidationError = validateReservationTime(
-    data.reservation_date as string,
-    data.reservation_time as string
-  );
+  const timeValidationError = validateReservationTime(data.reservation_date, data.reservation_time);
   if (timeValidationError) {
     next({
       status: 400,
@@ -99,16 +101,13 @@ async function create(
   next: NextFunction
 ): Promise<void> {
   const { data } = req.body as { data: ReservationData };
-  if (data.status && data.status !== "booked") {
-    next({
-      status: 400,
-      message: `Status ${data.status} is not valid for new reservations`,
-    } as APIError);
-    return;
-  }
-
+  
   try {
-    const newData: ReservationData = { ...data, status: "booked" };
+    const newData: ReservationData = { 
+      ...data, 
+      status: data.status || "booked" 
+    };
+    
     const createdData = await service.create(newData);
     res.status(201).json({ data: createdData });
   } catch (error) {
@@ -284,11 +283,14 @@ async function update(
 }
 
 export const reservationsController = {
-  create: [validateReservationData, asyncErrorBoundary(create)],
+  create: [
+    asyncErrorBoundary(hasRequiredFields),
+    asyncErrorBoundary(create),
+  ],
   list: asyncErrorBoundary(list),
   read: asyncErrorBoundary(read),
   seat: asyncErrorBoundary(seat),
   updateStatus: asyncErrorBoundary(updateStatus),
   finish: asyncErrorBoundary(finish),
-  update: [validateReservationData, asyncErrorBoundary(update)],
+  update: [asyncErrorBoundary(hasRequiredFields), asyncErrorBoundary(update)],
 };

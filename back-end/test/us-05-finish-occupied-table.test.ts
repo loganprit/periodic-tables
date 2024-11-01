@@ -1,29 +1,36 @@
-const request = require("supertest");
-
-const app = require("../src/app");
-const knex = require("../src/db/connection");
+import request from "supertest";
+import app from "../src/app";
+import knex from "../src/db/connection";
+import { TableData } from "../src/types/application";
 
 describe("US-05 - Finish an occupied table", () => {
-  beforeAll(() => {
-    return knex.migrate
-      .forceFreeMigrationsLock()
-      .then(() => knex.migrate.rollback(null, true))
-      .then(() => knex.migrate.latest());
+  beforeAll(async (): Promise<void> => {
+    await knex.migrate.forceFreeMigrationsLock();
+    await knex.migrate.rollback(undefined, true);
+    await knex.migrate.latest();
   });
 
-  beforeEach(() => {
-    return knex.seed.run();
+  beforeEach(async (): Promise<void> => {
+    await knex.transaction(async (trx) => {
+      await trx.seed.run();
+    });
   });
 
-  afterAll(async () => {
-    return await knex.migrate.rollback(null, true).then(() => knex.destroy());
+  afterAll(async (): Promise<void> => {
+    try {
+      await knex.migrate.rollback(undefined, true);
+      await knex.destroy();
+    } catch (error) {
+      console.error("Database cleanup failed:", error);
+      throw error;
+    }
   });
 
   describe("DELETE /tables/:table_id/seat", () => {
-    let barTableOne;
-    let tableOne;
+    let barTableOne: TableData;
+    let tableOne: TableData;
 
-    beforeEach(async () => {
+    beforeEach(async (): Promise<void> => {
       barTableOne = await knex("tables").where("table_name", "Bar #1").first();
       tableOne = await knex("tables").where("table_name", "#1").first();
     });
@@ -38,7 +45,7 @@ describe("US-05 - Finish an occupied table", () => {
       expect(response.status).toBe(404);
     });
 
-    test("returns 400 if table_id is not occupied.", async () => {
+    test("returns 400 if table_id is not occupied", async () => {
       const response = await request(app)
         .delete("/tables/1/seat")
         .set("Accept", "application/json")
@@ -48,7 +55,7 @@ describe("US-05 - Finish an occupied table", () => {
       expect(response.status).toBe(400);
     });
 
-    test("returns 200 if table_id is occupied ", async () => {
+    test("returns 200 if table_id is occupied", async () => {
       expect(tableOne).not.toBeUndefined();
 
       const seatResponse = await request(app)

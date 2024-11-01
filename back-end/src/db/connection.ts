@@ -1,5 +1,5 @@
 import { Knex, knex } from "knex";
-import config from "../knexfile";
+import config from "../../knexfile";
 
 /**
  * Type definition for supported environment names

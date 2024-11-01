@@ -1,4 +1,6 @@
 import { Knex } from "knex";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Interface representing a reservation record
@@ -15,10 +17,13 @@ interface Reservation {
 }
 
 /**
- * Import seed data from JSON file
- * Using require for JSON import as it's more reliable with CommonJS modules
+ * Read and parse the JSON seed data
  */
-const reservations: Reservation[] = require("./00-reservations.json");
+const seedData: string = fs.readFileSync(
+  path.join(__dirname, "./00-reservations.json"),
+  "utf8"
+);
+const reservations: Reservation[] = JSON.parse(seedData);
 
 /**
  * Seed function to populate the reservations table
