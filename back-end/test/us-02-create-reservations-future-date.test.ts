@@ -1,8 +1,8 @@
 import request from "supertest";
 import app from "../src/app";
 import knex from "../src/db/connection";
-import { ReservationData } from "../src/types/application";
-import { DateValidationError } from "../src/types/validation";
+import { ReservationData } from "../src/types";
+import { DateValidationError } from "../src/types";
 
 // Test data factory
 function createTestReservation(overrides?: Partial<ReservationData>): ReservationData {

@@ -40,10 +40,10 @@ const baseConfig: Partial<Knex.Config> = {
   client: "postgresql",
   pool: { min: 1, max: 5 },
   migrations: {
-    directory: path.join(__dirname, "db", "migrations"),
+    directory: path.join(__dirname, "src", "db", "migrations"),
   },
   seeds: {
-    directory: path.join(__dirname, "db", "seeds"),
+    directory: path.join(__dirname, "src", "db", "seeds"),
   },
   debug: !!DEBUG,
 };

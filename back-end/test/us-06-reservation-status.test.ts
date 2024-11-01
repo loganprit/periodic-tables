@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import knex from "../src/db/connection";
-import { ReservationData, TableData } from "../src/types/application";
+import { ReservationData, TableData } from "../src/types/";
 
 /**
  * Test suite for US-06 - Reservation status functionality

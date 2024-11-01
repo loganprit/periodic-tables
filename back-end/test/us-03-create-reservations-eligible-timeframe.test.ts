@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import knex from "../src/db/connection";
-import { ReservationData } from "../src/types/application";
+import { ReservationData } from "../src/types/";
 
 describe("US-03 - Create reservations eligible timeframe", () => {
   beforeAll(async (): Promise<void> => {

@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import knex from "../src/db/connection";
-import { ReservationData } from "../src/types/application";
+import { ReservationData } from "../src/types/";
 
 describe("US-07 - Search reservation by phone number", () => {
   beforeAll(async (): Promise<void> => {

@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import knex from "../src/db/connection";
-import { TableData } from "../src/types/application";
+import { TableData } from "../src/types/";
 
 describe("US-05 - Finish an occupied table", () => {
   beforeAll(async (): Promise<void> => {

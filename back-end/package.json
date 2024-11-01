@@ -12,7 +12,7 @@
     "start": "ts-node src/server.ts",
     "start:dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc && cp src/db/seeds/*.json build/src/db/seeds/",
-    "test": "tsc && jest --config ./test/jest.config.js --runInBand --forceExit",
+    "test": "jest --config ./test/jest.config.js --runInBand --forceExit",
     "test:1": "npm run test -- us-01",
     "test:2": "npm run test -- us-02",
     "test:3": "npm run test -- us-03",
@@ -24,7 +24,7 @@
     "test:drop-database": "node test/drop-database",
     "test:start": "npx cross-env LOG_LEVEL=warn NODE_ENV=test npm run test:start:run",
     "test:start:run": "run-s test:drop-database start ",
-    "migrate": "knex migrate:latest"
+    "migrate": "ts-node ./node_modules/.bin/knex migrate:latest"
   },
   "keywords": [],
   "author": "",

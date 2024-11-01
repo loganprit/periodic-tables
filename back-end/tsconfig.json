@@ -13,9 +13,21 @@
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@types/*": ["src/types/*"]
+    }
   },
-  "include": ["src/**/*", "src/**/*.json", "test/**/*", "jest.config.ts", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "build"]
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "knexfile.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
 }
   
