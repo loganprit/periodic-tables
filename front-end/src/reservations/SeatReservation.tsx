@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/api";
+import { Reservation, Table } from "../types/dashboard";
+import { ErrorResponse } from "../types/reservation";
 import "./SeatReservation.css";
 
 /**
@@ -8,12 +10,12 @@ import "./SeatReservation.css";
  * @returns {JSX.Element} The rendered SeatReservation component.
  */
 function SeatReservation() {
-  const history = useHistory();
-  const { reservation_id } = useParams();
-  const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState("");
-  const [error, setError] = useState(null);
-  const [reservation, setReservation] = useState(null);
+  const navigate = useNavigate();
+  const { reservation_id } = useParams<{ reservation_id: string }>();
+  const [tables, setTables] = useState<Table[]>([]);
+  const [selectedTable, setSelectedTable] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [reservation, setReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -21,8 +23,8 @@ function SeatReservation() {
     async function loadData() {
       try {
         const [tablesResponse, reservationResponse] = await Promise.all([
-          axiosInstance.get("/tables"),
-          axiosInstance.get(`/reservations/${reservation_id}`),
+          axiosInstance.get<{ data: Table[] }>("/tables"),
+          axiosInstance.get<{ data: Reservation }>(`/reservations/${reservation_id}`),
         ]);
 
         if (isMounted) {
@@ -44,13 +46,15 @@ function SeatReservation() {
     };
   }, [reservation_id]);
 
-  const handleChange = ({ target }) => {
-    setSelectedTable(target.value);
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTable(event.target.value);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (reservation && reservation.status === "seated") {
+    if (!reservation) return;
+
+    if (reservation.status === "seated") {
       setError("This reservation is already seated.");
       return;
     }
@@ -69,23 +73,21 @@ function SeatReservation() {
       await axiosInstance.put(`/tables/${selectedTable}/seat`, {
         data: { reservation_id },
       });
-      history.push(`/dashboard?date=${reservation.reservation_date}`);
-    } catch (error) {
+      navigate(`/dashboard?date=${reservation.reservation_date}`);
+    } catch (err) {
+      const error = err as ErrorResponse;
       console.error("Error seating reservation:", error);
-      if (error.response) {
-        setError(
-          error.response.data.error ||
-            "An error occurred while seating the reservation."
-        );
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
     }
   };
 
-  const handleCancel = (event) => {
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    history.goBack();
+    navigate(-1);
   };
 
   if (!reservation) {

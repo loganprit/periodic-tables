@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance, { getReservation, updateReservation } from "../utils/api";
 import { validateReservationDate } from "../utils/dateValidation";
 import { validateReservationTime } from "../utils/timeValidation";
+import { ReservationFormData, FormEvent, InputEvent, ErrorResponse } from "../types/reservation";
 import "./ReservationForm.css";
 
 /**
@@ -10,10 +11,10 @@ import "./ReservationForm.css";
  * @returns {JSX.Element} The rendered ReservationForm component.
  */
 function ReservationForm() {
-  const history = useHistory();
-  const { reservation_id } = useParams();
+  const navigate = useNavigate();
+  const { reservation_id } = useParams<{ reservation_id?: string }>();
   const isEdit = Boolean(reservation_id);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ReservationFormData>({
     first_name: "",
     last_name: "",
     mobile_number: "",
@@ -21,14 +22,14 @@ function ReservationForm() {
     reservation_time: "",
     people: 1,
   });
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && reservation_id) {
       const loadReservation = async () => {
         try {
-          const response = await getReservation(reservation_id);
-          setFormData(response);
+          const response = await getReservation(Number(reservation_id), new AbortController().signal);
+          setFormData(response as ReservationFormData);
         } catch (error) {
           console.error("Error loading reservation:", error);
         }
@@ -37,72 +38,48 @@ function ReservationForm() {
     }
   }, [isEdit, reservation_id]);
 
-  const handleChange = ({ target }) => {
-    const value =
-      target.name === "people" ? Number(target.value) : target.value;
+  const handleChange = ({ target }: InputEvent) => {
+    const value = target.name === "people" ? Number(target.value) : target.value;
     setFormData({ ...formData, [target.name]: value });
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    console.log("Form submission started");
+    setError(null);
 
-    // Validate the reservation date
     const dateError = validateReservationDate(formData.reservation_date);
     if (dateError) {
       setError(dateError);
-      console.error(dateError);
       return;
     }
 
-    // Validate the reservation time
     const timeError = validateReservationTime(
       formData.reservation_date,
       formData.reservation_time
     );
     if (timeError) {
       setError(timeError);
-      console.error(timeError);
       return;
     }
 
     try {
-      const startTime = Date.now();
-      console.log("Request Payload:", { data: formData });
-
-      if (isEdit) {
-        await updateReservation(reservation_id, formData);
+      if (isEdit && reservation_id) {
+        await updateReservation(Number(reservation_id), formData, new AbortController().signal);
       } else {
         await axiosInstance.post("/reservations", { data: formData });
       }
-
-      const endTime = Date.now();
-      console.log(`Form submission took ${endTime - startTime} ms`);
-      setFormData({
-        first_name: "",
-        last_name: "",
-        mobile_number: "",
-        reservation_date: "",
-        reservation_time: "",
-        people: 1,
-      });
-      setError(null); // Clear any previous errors
-      history.push(`/dashboard?date=${formData.reservation_date}`);
-    } catch (error) {
-      console.error(
-        "There was an error creating/updating the reservation:",
-        error
-      );
+      navigate(`/dashboard?date=${formData.reservation_date}`);
+    } catch (err) {
+      const error = err as ErrorResponse;
       if (error.response) {
-        console.error("Error response data:", error.response.data);
-        setError(error.response.data.error); // Set error message from backend
+        setError(error.response.data.error);
       }
     }
   };
 
-  const handleCancel = (event) => {
+  const handleCancel = (event: React.MouseEvent) => {
     event.preventDefault();
-    history.goBack();
+    navigate(-1);
   };
 
   return (

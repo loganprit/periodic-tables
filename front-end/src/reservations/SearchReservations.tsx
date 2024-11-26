@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { listReservations } from "../utils/api";
 import ReservationList from "./ReservationList";
+import { Reservation } from "../types/dashboard";
+import { FormEvent, InputEvent } from "../types/reservation";
 import "./SearchReservations.css";
 
 /**
@@ -9,20 +11,21 @@ import "./SearchReservations.css";
  */
 function SearchReservations() {
   const [mobileNumber, setMobileNumber] = useState("");
-  const [reservations, setReservations] = useState([]);
-  const [error, setError] = useState(null);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const abortController = new AbortController();
 
-  const handleChange = ({ target }) => {
+  const handleChange = ({ target }: InputEvent) => {
     setMobileNumber(target.value);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
 
     try {
-      const data = await listReservations({ mobile_number: mobileNumber });
-      setReservations(data);
+      const data = await listReservations({ mobile_number: mobileNumber }, abortController.signal);
+      setReservations(Array.isArray(data) ? data : [data]);
     } catch (error) {
       setError("Must enter a valid phone number.");
     }

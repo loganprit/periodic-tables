@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cancelReservation, listReservations } from "../utils/api";
+import { Reservation } from "../types/dashboard";
 import "./ReservationList.css";
+
+interface ReservationListProps {
+  reservations?: Reservation[];
+  loadOnMount?: boolean;
+}
 
 /**
  * ReservationList component to display a list of reservations.
@@ -13,13 +19,14 @@ import "./ReservationList.css";
 function ReservationList({
   reservations: initialReservations = [],
   loadOnMount = true,
-}) {
-  const [reservations, setReservations] = useState(initialReservations);
+}: ReservationListProps) {
+  const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
+  const abortController = new AbortController();
 
   const loadReservations = async () => {
     try {
-      const response = await listReservations();
-      setReservations(response.data.data);
+      const response = await listReservations({}, abortController.signal);
+      setReservations(Array.isArray(response) ? response : [response]);
     } catch (error) {
       console.error("Error fetching reservations:", error);
     }
@@ -29,17 +36,18 @@ function ReservationList({
     if (loadOnMount) {
       loadReservations();
     }
+    return () => abortController.abort();
   }, [loadOnMount]);
 
-  const handleCancelReservation = async (reservation_id) => {
+  const handleCancelReservation = async (reservation_id: number) => {
     if (
       window.confirm(
         "Are you sure you want to cancel this reservation? This cannot be undone."
       )
     ) {
       try {
-        await cancelReservation(reservation_id);
-        loadReservations(); // Ensure the state is updated after canceling a reservation
+        await cancelReservation(reservation_id, abortController.signal);
+        loadReservations();
       } catch (error) {
         console.error("Failed to cancel reservation:", error);
       }

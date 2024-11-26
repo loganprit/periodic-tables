@@ -34,6 +34,14 @@ export interface Table {
 }
 
 /**
+ * Table form data interface
+ */
+export interface TableFormData {
+  table_name: string;
+  capacity: string | number;
+}
+
+/**
  * API parameters interface
  */
 export interface ApiParams {

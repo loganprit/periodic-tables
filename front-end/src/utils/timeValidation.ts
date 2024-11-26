@@ -6,7 +6,7 @@ import { DateString, TimeString } from "../types/utils";
  * @param {TimeString} time - The time of the reservation.
  * @returns {string|null} The validation error message, or null if valid.
  */
-function validateReservationTime(date: DateString, time: TimeString): string | null {
+export function validateReservationTime(date: DateString, time: TimeString): string | null {
   const open = "10:30";
   const close = "21:30";
 
@@ -29,7 +29,3 @@ function validateReservationTime(date: DateString, time: TimeString): string | n
 
   return null;
 }
-
-module.exports = {
-  validateReservationTime,
-};

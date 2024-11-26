@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/api";
+import { ErrorResponse } from "../types/reservation";
+import { TableFormData } from "../types/dashboard";
 import "./TableForm.css";
 
 /**
@@ -8,23 +10,22 @@ import "./TableForm.css";
  * @returns {JSX.Element} The rendered TableForm component.
  */
 function TableForm() {
-  const history = useHistory();
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<TableFormData>({
     table_name: "",
     capacity: "",
   });
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = ({ target }) => {
-    const value =
-      target.name === "capacity" ? Number(target.value) : target.value;
+  const handleChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    const value = target.name === "capacity" ? Number(target.value) : target.value;
     setFormData({
       ...formData,
       [target.name]: value,
     });
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
@@ -33,32 +34,30 @@ function TableForm() {
       return;
     }
 
-    if (
-      !formData.capacity ||
-      isNaN(formData.capacity) ||
-      formData.capacity < 1
-    ) {
+    const capacity = Number(formData.capacity);
+    if (!capacity || isNaN(capacity) || capacity < 1) {
       setError("Capacity must be a positive number.");
       return;
     }
 
     try {
       await axiosInstance.post("/tables", {
-        data: formData,
+        data: { ...formData, capacity },
       });
-      history.push("/dashboard");
-    } catch (error) {
-      if (error.response) {
+      navigate("/dashboard");
+    } catch (err) {
+      const error = err as ErrorResponse;
+      if (error.response?.data?.error) {
         setError(error.response.data.error);
       } else {
-        setError(error.message);
+        setError("An unexpected error occurred");
       }
     }
   };
 
-  const handleCancel = (event) => {
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    history.goBack();
+    navigate(-1);
   };
 
   return (

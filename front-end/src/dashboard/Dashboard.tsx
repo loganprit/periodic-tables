@@ -49,7 +49,7 @@ function Dashboard() {
     try {
       const reservationsResponse = await listReservations({ date }, abortController.signal);
       const tablesResponse = await listTables(abortController.signal);
-      setReservations(reservationsResponse);
+      setReservations(Array.isArray(reservationsResponse) ? reservationsResponse : [reservationsResponse]);
       setTables(tablesResponse);
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
