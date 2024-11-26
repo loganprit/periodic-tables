@@ -2,10 +2,18 @@ import { Link, useLocation } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
 
 /**
+ * Interface defining props for Menu component
+ */
+interface MenuProps {
+  isHomePage: boolean;
+}
+
+/**
  * Navigation menu component that adjusts its active state based on the current location.
+ * @param {MenuProps} props - Component props
  * @returns {JSX.Element}
  */
-function Menu(): JSX.Element {
+function Menu({ isHomePage }: MenuProps): JSX.Element {
   const location = useLocation();
   const navItems = [
     { name: "HOME", path: "/" },
@@ -23,7 +31,9 @@ function Menu(): JSX.Element {
 
   return (
     <animated.nav
-      className="navbar container justify-content-center align-items-center"
+      className={`navbar container justify-content-center align-items-center ${
+        isHomePage ? "home-menu" : ""
+      }`}
       style={menuAnimation}
     >
       <ul className="nav justify-content-center w-100">

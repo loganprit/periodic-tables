@@ -31,7 +31,7 @@ function Layout(_props: LayoutProps): JSX.Element {
               </div>
             </div>
           </div>
-          <Menu />
+          <Menu isHomePage={isHomePage} />
         </div>
       )}
       {!isMobile && !isHomePage && (
@@ -43,12 +43,12 @@ function Layout(_props: LayoutProps): JSX.Element {
               </div>
             </div>
           </div>
-          <Menu />
+          <Menu isHomePage={isHomePage} />
         </div>
       )}
       {!isMobile && isHomePage && (
         <div>
-          <Menu />
+          <Menu isHomePage={isHomePage} />
           <div className="home-logo d-flex flex-column justify-content-center align-items-center">
             <div id="logo">
               <div id="logo-line-1" className="lemonada-text">
