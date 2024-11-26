@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useHistory, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   listReservations,
   listTables,
@@ -7,6 +6,14 @@ import {
   updateReservationStatus,
 } from "../utils/api";
 import "./Dashboard.css";
+import {
+  Reservation,
+  Table,
+  DateNavigationHandler,
+  TableActionHandler,
+  ReservationActionHandler
+} from "../types/dashboard";
+import { useEffect, useState, useCallback } from "react";
 
 // Custom hook to parse URL query parameters
 function useQuery() {
@@ -18,40 +25,36 @@ function useQuery() {
  * @returns {JSX.Element} The rendered Dashboard component.
  */
 function Dashboard() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const query = useQuery();
-  let date = query.get("date");
 
-  // Function to get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
     const offset = today.getTimezoneOffset();
-    today.setMinutes(today.getMinutes() - offset); // Adjust for timezone
+    today.setMinutes(today.getMinutes() - offset);
     return today.toISOString().split("T")[0];
   };
 
-  // Ensure date is in correct format
-  if (!date) {
-    date = getTodayDate();
-  } else {
-    date = new Date(date).toISOString().split("T")[0];
-  }
+  const queryDate = query.get("date");
+  const date = (queryDate 
+    ? new Date(queryDate as string).toISOString().split("T")[0] 
+    : getTodayDate()) as string;
 
-  const [reservations, setReservations] = useState([]);
-  const [tables, setTables] = useState([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
 
-  // Load dashboard data
+  // Load dashboard data with proper signal handling
   const loadDashboard = useCallback(async () => {
-    console.log("Loading dashboard for date:", date);
+    const abortController = new AbortController();
     try {
-      const reservationsResponse = await listReservations({ date });
-      console.log("Reservations received:", reservationsResponse);
-      const tablesResponse = await listTables();
+      const reservationsResponse = await listReservations({ date }, abortController.signal);
+      const tablesResponse = await listTables(abortController.signal);
       setReservations(reservationsResponse);
       setTables(tablesResponse);
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     }
+    return () => abortController.abort();
   }, [date]);
 
   useEffect(() => {
@@ -59,32 +62,32 @@ function Dashboard() {
   }, [loadDashboard]);
 
   // Handlers for navigating through dates
-  const handlePrevious = () => {
-    const prevDate = new Date(date);
+  const handlePrevious: DateNavigationHandler = () => {
+    const prevDate = new Date(date + "T00:00:00");
     prevDate.setDate(prevDate.getDate() - 1);
-    history.push(`/dashboard?date=${prevDate.toISOString().split("T")[0]}`);
+    navigate(`/dashboard?date=${prevDate.toISOString().split("T")[0]}`);
   };
 
-  const handleToday = () => {
+  const handleToday: DateNavigationHandler = () => {
     const today = getTodayDate();
-    history.push(`/dashboard?date=${today}`);
+    navigate(`/dashboard?date=${today}`);
   };
 
-  const handleNext = () => {
-    const nextDate = new Date(date);
+  const handleNext: DateNavigationHandler = () => {
+    const nextDate = new Date(date + "T00:00:00");
     nextDate.setDate(nextDate.getDate() + 1);
-    history.push(`/dashboard?date=${nextDate.toISOString().split("T")[0]}`);
+    navigate(`/dashboard?date=${nextDate.toISOString().split("T")[0]}`);
   };
 
   // Handler for finishing a table
-  const handleFinish = async (table_id) => {
+  const handleFinish: TableActionHandler = async (table_id) => {
     if (
       window.confirm(
         "Is this table ready to seat new guests? This cannot be undone."
       )
     ) {
       try {
-        await finishTable(table_id);
+        await finishTable(table_id, date);
         loadDashboard(); // Ensure the state is updated after finishing a table
       } catch (error) {
         console.error("Failed to finish table:", error);
@@ -93,14 +96,14 @@ function Dashboard() {
   };
 
   // Handler for canceling a reservation
-  const handleCancelReservation = async (reservation_id) => {
+  const handleCancelReservation: ReservationActionHandler = async (reservation_id) => {
     if (
       window.confirm(
         "Do you want to cancel this reservation? This cannot be undone."
       )
     ) {
       try {
-        await updateReservationStatus(reservation_id, "cancelled");
+        await updateReservationStatus(reservation_id, "cancelled", date);
         loadDashboard(); // Ensure the state is updated after canceling a reservation
       } catch (error) {
         console.error("Failed to cancel reservation:", error);
@@ -109,18 +112,14 @@ function Dashboard() {
   };
 
   // Function to format date string into a readable format (e.g. "Sunday, June 23, 2024")
-  const formatDate = (dateString) => {
-    const options = {
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     };
-    // Use the date string directly without creating a new Date object
-    return new Date(dateString + "T00:00:00").toLocaleDateString(
-      undefined,
-      options
-    );
+    return new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, options);
   };
 
   const today = getTodayDate();
@@ -148,8 +147,8 @@ function Dashboard() {
         ) : (
           <ul className="dashboard-reservations-list">
             {reservations
-              .filter((reservation) => reservation.status !== "finished")
-              .map((reservation) => (
+              .filter((reservation: Reservation) => reservation.status !== "finished")
+              .map((reservation: Reservation) => (
                 <li key={reservation.reservation_id}>
                   {reservation.first_name} {reservation.last_name} -{" "}
                   {reservation.people}
@@ -187,7 +186,7 @@ function Dashboard() {
       <div className="dashboard-tables">
         <h3>Tables</h3>
         <ul className="dashboard-tables-list">
-          {tables.map((table) => (
+          {tables.map((table: Table) => (
             <li key={table.table_id}>
               {table.table_name} - {table.capacity} -{" "}
               <span data-table-id-status={table.table_id}>

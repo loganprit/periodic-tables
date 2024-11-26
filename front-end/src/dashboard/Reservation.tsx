@@ -1,13 +1,12 @@
-import React from "react";
+import { Reservation as ReservationType } from "../types/dashboard";
 import "./Reservation.css";
 
 /**
  * Component to display reservation details.
- * @param {Object} props - Component properties.
- * @param {Object} props.reservation - Reservation object containing details to display.
+ * @param {ReservationType} props.reservation - Reservation object containing details to display.
  * @returns {JSX.Element} The rendered Reservation component.
  */
-function Reservation({ reservation }) {
+function Reservation({ reservation }: { reservation: ReservationType }) {
   return (
     <div className="reservation-container">
       <h2 className="reservation-header">
