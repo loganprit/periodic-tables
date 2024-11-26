@@ -1,5 +1,4 @@
-import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes as RouterRoutes } from "react-router-dom";
 import Dashboard from "../dashboard/Dashboard";
 import ReservationForm from "../reservations/ReservationForm";
 import SeatReservation from "../reservations/SeatReservation";
@@ -10,23 +9,17 @@ import SearchReservations from "../reservations/SearchReservations";
  * Defines the main routes of the application.
  * @returns {JSX.Element} The routes for the application.
  */
-function Routes() {
+function AppRoutes(): JSX.Element {
   return (
-    <Switch>
-      <Route exact path="/dashboard" component={Dashboard} />
-      <Route path="/reservations/new" component={ReservationForm} />
-      <Route
-        path="/reservations/:reservation_id/seat"
-        component={SeatReservation}
-      />
-      <Route
-        path="/reservations/:reservation_id/edit"
-        component={ReservationForm}
-      />
-      <Route path="/tables/new" component={TableForm} />
-      <Route path="/search" component={SearchReservations} />
-    </Switch>
+    <RouterRoutes>
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/reservations/new" element={<ReservationForm />} />
+      <Route path="/reservations/:reservation_id/seat" element={<SeatReservation />} />
+      <Route path="/reservations/:reservation_id/edit" element={<ReservationForm />} />
+      <Route path="/tables/new" element={<TableForm />} />
+      <Route path="/search" element={<SearchReservations />} />
+    </RouterRoutes>
   );
 }
 
-export default Routes;
+export default AppRoutes;

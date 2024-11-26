@@ -47,5 +47,8 @@
   },
   "keywords": [],
   "author": "Logan Pritchett",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "react-spring": "^9.7.4"
+  }
 }

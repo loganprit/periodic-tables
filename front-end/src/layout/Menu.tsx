@@ -1,14 +1,11 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
 
 /**
  * Navigation menu component that adjusts its active state based on the current location.
- * @param {Object} props - Component properties.
- * @param {boolean} props.isHomePage - Indicates if the current page is the home page.
  * @returns {JSX.Element}
  */
-function Menu({ isHomePage }) {
+function Menu(): JSX.Element {
   const location = useLocation();
   const navItems = [
     { name: "HOME", path: "/" },

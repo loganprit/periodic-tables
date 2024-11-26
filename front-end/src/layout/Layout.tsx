@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useMediaQuery } from "react-responsive";
 import Menu from "./Menu";
 import Routes from "./Routes";
-import { useMediaQuery } from "react-responsive";
+import { LayoutProps } from "../types/layout";
 import "./Layout.css";
 
 /**
@@ -10,10 +11,10 @@ import "./Layout.css";
  * Uses media queries to adjust layout based on screen size.
  * @returns {JSX.Element}
  */
-function Layout() {
+function Layout(_props: LayoutProps): JSX.Element {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const location = useLocation();
-  const [isHomePage, setIsHomePage] = useState(location.pathname === "/");
+  const [isHomePage, setIsHomePage] = useState<boolean>(location.pathname === "/");
 
   useEffect(() => {
     setIsHomePage(location.pathname === "/");
