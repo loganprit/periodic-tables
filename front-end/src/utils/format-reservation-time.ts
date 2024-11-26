@@ -1,21 +1,24 @@
 import { formatAsTime } from "./date-time";
+import { Reservation } from "../types/dashboard";
 
 /**
  * Formats the reservation_time property of a reservation.
- * @param {Object} reservation - The reservation to format.
- * @returns {Object} The formatted reservation.
+ * @param {Reservation} reservation - The reservation to format.
+ * @returns {Reservation} The formatted reservation.
  */
-function formatTime(reservation) {
+function formatTime(reservation: Reservation): Reservation {
   reservation.reservation_time = formatAsTime(reservation.reservation_time);
   return reservation;
 }
 
 /**
  * Formats the reservation_time property of one or more reservations.
- * @param {Object|Object[]} reservations - A reservation or an array of reservations.
- * @returns {Object|Object[]} The formatted reservation(s).
+ * @param {Reservation|Reservation[]} reservations - A reservation or an array of reservations.
+ * @returns {Reservation|Reservation[]} The formatted reservation(s).
  */
-export default function formatReservationTime(reservations) {
+export default function formatReservationTime(
+  reservations: Reservation | Reservation[]
+): Reservation | Reservation[] {
   return Array.isArray(reservations)
     ? reservations.map(formatTime)
     : formatTime(reservations);

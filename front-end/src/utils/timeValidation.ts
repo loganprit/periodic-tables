@@ -1,10 +1,12 @@
+import { DateString, TimeString } from "../types/utils";
+
 /**
  * Validates the reservation time.
- * @param {string} date - The date of the reservation.
- * @param {string} time - The time of the reservation.
+ * @param {DateString} date - The date of the reservation.
+ * @param {TimeString} time - The time of the reservation.
  * @returns {string|null} The validation error message, or null if valid.
  */
-function validateReservationTime(date, time) {
+function validateReservationTime(date: DateString, time: TimeString): string | null {
   const open = "10:30";
   const close = "21:30";
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./dashboard/Dashboard";
 import Layout from "./layout/Layout";
 import ReservationForm from "./reservations/ReservationForm";
@@ -10,15 +9,15 @@ function App() {
   return (
     <Router>
       <Layout>
-        <Switch>
-          <Route exact path="/" component={Dashboard} />
-          <Route path="/reservations/new" component={ReservationForm} />
-          <Route
-            path="/reservations"
-            render={() => <ReservationList loadOnMount={true} />}
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/reservations/new" element={<ReservationForm />} />
+          <Route 
+            path="/reservations" 
+            element={<ReservationList loadOnMount={true} />} 
           />
-          <Route component={NotFound} />
-        </Switch>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </Layout>
     </Router>
   );

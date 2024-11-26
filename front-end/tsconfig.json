@@ -31,11 +31,10 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["src"],
+  "include": ["src", "e2e/setupTests.ts"],
   "exclude": ["node_modules", "build"]
 }
