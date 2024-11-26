@@ -1,8 +1,7 @@
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import { setDefaultOptions } from 'expect-puppeteer';
 import fs from "fs";
-import type { Browser, ConsoleMessage } from "puppeteer-core";
-import type { TestPage } from "./types/puppeteer";
+import type { Browser, ConsoleMessage, Page } from "puppeteer";
 
 const fsPromises = fs.promises;
 import { describe, test, expect, beforeAll, beforeEach, afterEach } from "@jest/globals";
@@ -16,7 +15,7 @@ const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
 };
 
 describe("US-07 - Search reservations - E2E", () => {
-  let page: TestPage;
+  let page: Page;
   let browser: Browser;
 
   beforeAll(async () => {
@@ -27,7 +26,7 @@ describe("US-07 - Search reservations - E2E", () => {
   beforeEach(async () => {
     browser = await puppeteer.launch();
     const newPage = await browser.newPage();
-    page = newPage as unknown as TestPage;
+    page = newPage as unknown as Page;
     page.on("console", onPageConsole);
     await page.setViewport({ width: 1920, height: 1080 });
     await page.goto(`${baseURL}/search`, { waitUntil: "networkidle0" });
@@ -48,7 +47,7 @@ describe("US-07 - Search reservations - E2E", () => {
 
       await Promise.all([
         page.click("button[type=submit]"),
-        page.waitForResponse((response) =>
+        page.waitForResponse((response: any) =>
           response.url().includes("mobile_number=")
         ),
       ]);
@@ -71,7 +70,7 @@ describe("US-07 - Search reservations - E2E", () => {
 
       await Promise.all([
         page.click("button[type=submit]"),
-        page.waitForResponse((response) =>
+        page.waitForResponse((response: any) =>
           response.url().includes("mobile_number=")
         ),
       ]);

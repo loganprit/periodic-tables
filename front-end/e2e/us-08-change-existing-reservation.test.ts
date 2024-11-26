@@ -1,8 +1,7 @@
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import { setDefaultOptions } from 'expect-puppeteer';
 import fs from "fs";
-import type { Browser, ConsoleMessage } from "puppeteer-core";
-import type { TestPage } from "./types/puppeteer";
+import type { Browser, ConsoleMessage, Page } from "puppeteer";
 import type { Reservation } from "./types";
 
 const fsPromises = fs.promises;
@@ -18,7 +17,7 @@ const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
 };
 
 describe("US-08 - Change an existing reservation - E2E", () => {
-  let page: TestPage;
+  let page: Page;
   let browser: Browser;
   let reservation: Reservation;
 
@@ -40,7 +39,7 @@ describe("US-08 - Change an existing reservation - E2E", () => {
       people: 4,
     });
     const newPage = await browser.newPage();
-    page = newPage as unknown as TestPage;
+    page = newPage as unknown as Page;
     await page.setViewport({ width: 1920, height: 1080 });
     page.on("console", onPageConsole);
   });
@@ -105,7 +104,7 @@ describe("US-08 - Change an existing reservation - E2E", () => {
           return response.url().includes("/reservations?date=");
         });
 
-        await page.waitForTimeout(500);
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         expect(await page.$(cancelButtonSelector)).toBeNull();
       });
@@ -153,7 +152,7 @@ describe("US-08 - Change an existing reservation - E2E", () => {
     });
 
     test("canceling form returns to the previous page", async () => {
-      const [cancelButton] = await page.$x(
+      const [cancelButton] = await page.$$(
         "//button[contains(translate(., 'ACDEFGHIJKLMNOPQRSTUVWXYZ', 'acdefghijklmnopqrstuvwxyz'), 'cancel')]"
       );
 
@@ -187,7 +186,7 @@ describe("US-08 - Change an existing reservation - E2E", () => {
       await firstNameInput.click({ clickCount: 3 });
       await firstNameInput.type("John");
 
-      const [submitButton] = await page.$x(
+      const [submitButton] = await page.$$(
         "//button[contains(translate(., 'ACDEFGHIJKLMNOPQRSTUVWXYZ', 'acdefghijklmnopqrstuvwxyz'), 'submit')]"
       );
 

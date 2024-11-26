@@ -1,20 +1,19 @@
-import puppeteer from "puppeteer";
 import { setDefaultOptions } from "expect-puppeteer";
 import fs from "fs";
-import type { Browser, ConsoleMessage } from "puppeteer";
-import type { TestPage } from "./types/puppeteer";
+import puppeteer from "puppeteer";
+import type { Browser, ConsoleMessage, JSHandle, Page } from "puppeteer";
 
 const fsPromises = fs.promises;
 const baseURL = process.env["BASE_URL"] || "http://localhost:3000";
 
 const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
   const args = await msg.args();
-  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  const eventJson = await Promise.all(args.map((event: JSHandle) => event.jsonValue()));
   console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
 };
 
 describe("US-01 - Create and list reservations - E2E", () => {
-  let page: TestPage;
+  let page: Page;
   let browser: Browser;
 
   beforeAll(async () => {
@@ -28,7 +27,7 @@ describe("US-01 - Create and list reservations - E2E", () => {
       headless: true,
     });
     const newPage = await browser.newPage();
-    page = newPage as unknown as TestPage;
+    page = newPage as unknown as Page;
     page.on("console", onPageConsole);
     await page.setViewport({ width: 1920, height: 1080 });
     await page.goto(`${baseURL}/reservations/new`, { waitUntil: "networkidle0" });
@@ -73,7 +72,7 @@ describe("US-01 - Create and list reservations - E2E", () => {
         waitUntil: "networkidle0",
       });
 
-      const [cancelButton] = await page.$x(
+      const [cancelButton] = await page.$$(
         "//button[contains(translate(., 'ACDEFGHIJKLMNOPQRSTUVWXYZ', 'acdefghijklmnopqrstuvwxyz'), 'cancel')]"
       );
 
