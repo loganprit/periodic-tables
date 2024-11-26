@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { cancelReservation, listReservations } from "../utils/api";
 import { Reservation } from "../types/dashboard";
@@ -21,23 +21,25 @@ function ReservationList({
   loadOnMount = true,
 }: ReservationListProps) {
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
-  const abortController = new AbortController();
+  const [abortController] = useState(() => new AbortController());
 
-  const loadReservations = async () => {
+  const loadReservations = useCallback(async () => {
     try {
       const response = await listReservations({}, abortController.signal);
       setReservations(Array.isArray(response) ? response : [response]);
     } catch (error) {
-      console.error("Error fetching reservations:", error);
+      if (error instanceof Error) {
+        console.error("Error fetching reservations:", error.message);
+      }
     }
-  };
+  }, [abortController]);
 
   useEffect(() => {
     if (loadOnMount) {
       loadReservations();
     }
     return () => abortController.abort();
-  }, [loadOnMount]);
+  }, [loadOnMount, loadReservations, abortController]);
 
   const handleCancelReservation = async (reservation_id: number) => {
     if (

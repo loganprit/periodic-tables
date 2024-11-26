@@ -1,21 +1,26 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import { setDefaultOptions } from 'expect-puppeteer';
 import fs from "fs";
+import type { Browser, ConsoleMessage } from "puppeteer-core";
+import type { TestPage } from "./types/puppeteer";
+import type { Reservation } from "./types";
+
 const fsPromises = fs.promises;
 import { describe, test, expect, beforeAll, beforeEach, afterAll } from "@jest/globals";
 const { createReservation } = require("./api");
 
 const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
-const onPageConsole = (msg) =>
-  Promise.all(msg.args().map((event) => event.jsonValue())).then((eventJson) =>
-    console.log(`<LOG::page console ${msg.type()}>`, ...eventJson)
-  );
+const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
+  const args = await msg.args();
+  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
+};
 
 describe("US-08 - Change an existing reservation - E2E", () => {
-  let page;
-  let browser;
-  let reservation;
+  let page: TestPage;
+  let browser: Browser;
+  let reservation: Reservation;
 
   const dashboardTestPath = `${baseURL}/dashboard?date=2035-01-04`;
 
@@ -34,7 +39,8 @@ describe("US-08 - Change an existing reservation - E2E", () => {
       reservation_time: "14:00",
       people: 4,
     });
-    page = await browser.newPage();
+    const newPage = await browser.newPage();
+    page = newPage as unknown as TestPage;
     await page.setViewport({ width: 1920, height: 1080 });
     page.on("console", onPageConsole);
   });
@@ -175,6 +181,9 @@ describe("US-08 - Change an existing reservation - E2E", () => {
 
     test("filling and submitting form updates the reservation", async () => {
       const firstNameInput = await page.$("input[name=first_name]");
+      if (!firstNameInput) {
+        throw new Error("First name input not found");
+      }
       await firstNameInput.click({ clickCount: 3 });
       await firstNameInput.type("John");
 

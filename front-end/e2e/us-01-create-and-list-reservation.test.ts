@@ -1,34 +1,40 @@
 import puppeteer from "puppeteer";
-import { setDefaultOptions } from 'expect-puppeteer';
+import { setDefaultOptions } from "expect-puppeteer";
 import fs from "fs";
+import type { Browser, ConsoleMessage } from "puppeteer";
+import type { TestPage } from "./types/puppeteer";
+
 const fsPromises = fs.promises;
-import { describe, test, expect, beforeAll, beforeEach, afterAll } from "@jest/globals";
+const baseURL = process.env["BASE_URL"] || "http://localhost:3000";
 
-const baseURL = process.env.BASE_URL || "http://localhost:3000";
-
-const onPageConsole = (msg) =>
-  Promise.all(msg.args().map((event) => event.jsonValue())).then((eventJson) =>
-    console.log(`<LOG::page console ${msg.type()}>`, ...eventJson)
-  );
+const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
+  const args = await msg.args();
+  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
+};
 
 describe("US-01 - Create and list reservations - E2E", () => {
-  let page;
-  let browser;
+  let page: TestPage;
+  let browser: Browser;
 
   beforeAll(async () => {
     await fsPromises.mkdir("./.screenshots", { recursive: true });
     setDefaultOptions({ timeout: 1000 });
-    browser = await puppeteer.launch();
   });
 
   beforeEach(async () => {
-    page = await browser.newPage();
+    browser = await puppeteer.launch({
+      executablePath: require("puppeteer").executablePath(),
+      headless: true,
+    });
+    const newPage = await browser.newPage();
+    page = newPage as unknown as TestPage;
     page.on("console", onPageConsole);
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.goto(`${baseURL}/reservations/new`, { waitUntil: "load" });
+    await page.goto(`${baseURL}/reservations/new`, { waitUntil: "networkidle0" });
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await browser.close();
   });
 

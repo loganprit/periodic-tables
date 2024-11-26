@@ -1,4 +1,4 @@
-import { Page, ElementHandle } from "puppeteer";
+import type { Page } from "puppeteer-core";
 import { CustomPage } from "./types";
 
 /**

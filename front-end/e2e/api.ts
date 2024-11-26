@@ -1,5 +1,6 @@
-import fetch from "cross-fetch";
-import { Reservation, Table, APIOptions } from "./types";
+import fetch from "node-fetch";
+import { Reservation, Table, APIOptions, APIResponse } from "./types";
+import type { RequestInit } from "node-fetch";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:5001";
@@ -24,7 +25,7 @@ async function fetchJson<T>(
       return onCancel as T;
     }
 
-    const payload = await response.json();
+    const payload = await response.json() as APIResponse<T>;
 
     if (payload.error) {
       return Promise.reject({ message: payload.error });

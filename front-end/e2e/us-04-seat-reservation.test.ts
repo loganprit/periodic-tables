@@ -1,6 +1,10 @@
-import puppeteer from "puppeteer";
-import { setDefaultOptions } from 'expect-puppeteer';
+import puppeteer from "puppeteer-core";
+import { setDefaultOptions } from "expect-puppeteer";
 import fs from "fs";
+import type { Browser, ConsoleMessage } from "puppeteer-core";
+import type { TestPage } from "./types/puppeteer";
+import type { Reservation } from "./types";
+
 const fsPromises = fs.promises;
 import { describe, test, expect, beforeAll, beforeEach, afterAll } from "@jest/globals";
 const { createReservation } = require("./api");
@@ -8,14 +12,15 @@ const { selectOptionByText } = require("./utils");
 
 const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
-const onPageConsole = (msg) =>
-  Promise.all(msg.args().map((event) => event.jsonValue())).then((eventJson) =>
-    console.log(`<LOG::page console ${msg.type()}>`, ...eventJson)
-  );
+const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
+  const args = await msg.args();
+  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
+};
 
 describe("US-04 - Seat reservation - E2E", () => {
-  let page;
-  let browser;
+  let page: TestPage;
+  let browser: Browser;
 
   beforeAll(async () => {
     await fsPromises.mkdir("./.screenshots", { recursive: true });
@@ -29,7 +34,8 @@ describe("US-04 - Seat reservation - E2E", () => {
 
   describe("/tables/new page", () => {
     beforeEach(async () => {
-      page = await browser.newPage();
+      const newPage = await browser.newPage();
+      page = newPage as unknown as TestPage;
       page.on("console", onPageConsole);
       await page.setViewport({ width: 1920, height: 1080 });
       await page.goto(`${baseURL}/tables/new`, { waitUntil: "networkidle0" });
@@ -158,7 +164,8 @@ describe("US-04 - Seat reservation - E2E", () => {
         people: 4,
       });
 
-      page = await browser.newPage();
+      const newPage = await browser.newPage();
+      page = newPage as unknown as TestPage;
       page.on("console", onPageConsole);
       await page.setViewport({ width: 1920, height: 1080 });
       await page.goto(
@@ -225,7 +232,7 @@ describe("US-04 - Seat reservation - E2E", () => {
   });
 
   describe("/dashboard page", () => {
-    let reservation;
+    let reservation: Reservation;
 
     beforeEach(async () => {
       reservation = await createReservation({
@@ -236,8 +243,10 @@ describe("US-04 - Seat reservation - E2E", () => {
         reservation_time: "13:45",
         people: 4,
       });
-      console.log("Created reservation:", reservation); // Log the reservation object
-      page = await browser.newPage();
+      console.log("Created reservation:", reservation);
+      
+      const newPage = await browser.newPage();
+      page = newPage as unknown as TestPage;
       page.on("console", onPageConsole);
       await page.setViewport({ width: 1920, height: 1080 });
       await page.goto(`${baseURL}/dashboard?date=2035-01-01`, {
@@ -261,11 +270,11 @@ describe("US-04 - Seat reservation - E2E", () => {
         fullPage: true,
       });
 
-      const containsSeat = await page.evaluate((hrefSelector) => {
-        return document
-          .querySelector(hrefSelector)
-          .innerText.toLowerCase()
-          .includes("seat");
+      const containsSeat = await page.evaluate((selector: string) => {
+        const element = document.querySelector(selector);
+        if (!element) return false;
+        const text = (element as HTMLElement).innerText;
+        return text.toLowerCase().includes("seat");
       }, hrefSelector);
 
       expect(containsSeat).toBe(true);

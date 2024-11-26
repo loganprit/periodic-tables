@@ -8,7 +8,6 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -31,16 +30,11 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "types": [
-      "jest",
-      "@testing-library/jest-dom",
-      "node",
-      "expect-puppeteer"
-    ]
+    "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["src", "e2e/setupTests.ts"],
+  "include": ["src"],
   "exclude": ["node_modules", "build"]
 }

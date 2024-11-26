@@ -1,18 +1,21 @@
-import puppeteer from "puppeteer";
-import { setDefaultOptions } from 'expect-puppeteer';
+import puppeteer from "puppeteer-core";
+import { setDefaultOptions } from "expect-puppeteer";
 import fs from "fs";
-const fsPromises = fs.promises;
-import { describe, test, expect, beforeAll, beforeEach, afterEach } from "@jest/globals";
-const baseURL = process.env.BASE_URL || "http://localhost:3000";
+import type { Browser, ConsoleMessage } from "puppeteer-core";
+import type { TestPage } from "./types/puppeteer";
 
-const onPageConsole = (msg) =>
-  Promise.all(msg.args().map((event) => event.jsonValue())).then((eventJson) =>
-    console.log(`<LOG::page console ${msg.type()}>`, ...eventJson)
-  );
+const fsPromises = fs.promises;
+const baseURL = process.env["BASE_URL"] || "http://localhost:3000";
+
+const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
+  const args = await msg.args();
+  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
+};
 
 describe("US-03 - Create reservation on a future, working date - E2E", () => {
-  let page;
-  let browser;
+  let page: TestPage;
+  let browser: Browser;
 
   beforeAll(async () => {
     await fsPromises.mkdir("./.screenshots", { recursive: true });
@@ -21,7 +24,8 @@ describe("US-03 - Create reservation on a future, working date - E2E", () => {
 
   beforeEach(async () => {
     browser = await puppeteer.launch();
-    page = await browser.newPage();
+    const newPage = await browser.newPage();
+    page = newPage as unknown as TestPage;
     page.on("console", onPageConsole);
     await page.setViewport({ width: 1920, height: 1080 });
     await page.goto(`${baseURL}/reservations/new`, { waitUntil: "load" });

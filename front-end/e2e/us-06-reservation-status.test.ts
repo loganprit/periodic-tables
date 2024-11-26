@@ -1,6 +1,10 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import { setDefaultOptions } from 'expect-puppeteer';
 import fs from "fs";
+import type { Browser, ConsoleMessage, Dialog, HTTPResponse } from "puppeteer-core";
+import type { TestPage } from "./types/puppeteer";
+import type { Reservation, Table } from "./types";
+
 const fsPromises = fs.promises;
 import { describe, test, expect, beforeAll, beforeEach, afterAll } from "@jest/globals";
 const { containsText } = require("./utils");
@@ -8,14 +12,15 @@ const { createReservation, createTable, seatReservation } = require("./api");
 
 const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
-const onPageConsole = (msg) =>
-  Promise.all(msg.args().map((event) => event.jsonValue())).then((eventJson) =>
-    console.log(`<LOG::page console ${msg.type()}>`, ...eventJson)
-  );
+const onPageConsole = async (msg: ConsoleMessage): Promise<void> => {
+  const args = await msg.args();
+  const eventJson = await Promise.all(args.map((event) => event.jsonValue()));
+  console.log(`<LOG::page console ${msg.type()}>`, ...eventJson);
+};
 
 describe("US-06 - Reservation status - E2E", () => {
-  let page;
-  let browser;
+  let page: TestPage;
+  let browser: Browser;
 
   beforeAll(async () => {
     await fsPromises.mkdir("./.screenshots", { recursive: true });
@@ -28,8 +33,8 @@ describe("US-06 - Reservation status - E2E", () => {
   });
 
   describe("/dashboard page", () => {
-    let reservation;
-    let table;
+    let reservation: Reservation;
+    let table: Table;
 
     beforeEach(async () => {
       reservation = await createReservation({
@@ -46,7 +51,8 @@ describe("US-06 - Reservation status - E2E", () => {
         capacity: 99,
       });
 
-      page = await browser.newPage();
+      const newPage = await browser.newPage();
+      page = newPage as unknown as TestPage;
       page.on("console", onPageConsole);
       await page.setViewport({ width: 1920, height: 1080 });
       await page.goto(`${baseURL}/dashboard?date=2035-01-01`, {
@@ -112,13 +118,13 @@ describe("US-06 - Reservation status - E2E", () => {
       const finishButtonSelector = `[data-table-id-finish="${table.table_id}"]`;
       await page.waitForSelector(finishButtonSelector);
 
-      page.on("dialog", async (dialog) => {
+      page.on("dialog", async (dialog: Dialog) => {
         await dialog.accept();
       });
 
       await page.click(finishButtonSelector);
 
-      await page.waitForResponse((response) => {
+      await page.waitForResponse((response: HTTPResponse) => {
         return response.url().endsWith(`/tables`);
       });
 
