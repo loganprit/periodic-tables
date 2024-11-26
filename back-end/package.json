@@ -12,7 +12,7 @@
     "start": "ts-node src/server.ts",
     "start:dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc && cp src/db/seeds/*.json build/src/db/seeds/",
-    "test": "jest --config ./test/jest.config.js --runInBand --forceExit",
+    "test": "jest --config ./test/jest.config.js --runInBand --detectOpenHandles --forceExit",
     "test:1": "npm run test -- us-01",
     "test:2": "npm run test -- us-02",
     "test:3": "npm run test -- us-03",

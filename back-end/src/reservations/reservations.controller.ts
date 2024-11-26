@@ -21,11 +21,7 @@ async function hasRequiredFields(
   const { data } = req.body;
 
   if (!data) {
-    next({
-      status: 400,
-      message: "Request body must include data object",
-    } as APIError);
-    return;
+    return next(new APIError(400, "Request body must include data object"));
   }
 
   const requiredFields = [
@@ -38,12 +34,22 @@ async function hasRequiredFields(
   ];
 
   for (const field of requiredFields) {
-    if (!data[field]) {
-      next({
-        status: 400,
-        message: `Field '${field}' is required`,
-      } as APIError);
-      return;
+    if (!data[field] || (typeof data[field] === "string" && !data[field].trim())) {
+      return next(new APIError(400, `Field '${field}' is required and cannot be empty`));
+    }
+
+    if (field === "reservation_date" && !isValidDate(data[field])) {
+      return next(new APIError(400, "reservation_date must be a valid date"));
+    }
+
+    if (field === "reservation_time" && !isValidTime(data[field])) {
+      return next(new APIError(400, "reservation_time must be a valid time"));
+    }
+
+    if (field === "people") {
+      if (typeof data.people !== "number" || data.people < 1) {
+        return next(new APIError(400, "people must be a number greater than 0"));
+      }
     }
   }
 
@@ -132,15 +138,13 @@ async function read(
   const { reservation_id } = req.params;
 
   try {
-    const data = await service.read(Number(reservation_id));
-    if (data) {
-      res.status(200).json({ data });
-    } else {
-      next({
-        status: 404,
-        message: `Reservation ${reservation_id} not found`,
-      } as APIError);
+    const reservation = await service.read(Number(reservation_id));
+    
+    if (!reservation) {
+      return next(new APIError(404, `Reservation ${reservation_id} not found`));
     }
+
+    res.json({ data: reservation });
   } catch (error) {
     next(error);
   }
