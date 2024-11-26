@@ -5,36 +5,31 @@ import { APIError } from "../types/errors";
 import { tablesService as service } from "./tables.service";
 import asyncErrorBoundary from "../errors/asyncErrorBoundary";
 
+type TableDataWithoutId = Omit<TableData, "table_id">;
+
 /**
  * Middleware to validate table data
  */
-function validateTableData(
+async function validateTableData(
   req: CustomRequest,
   res: CustomResponse,
   next: NextFunction
-): void {
-  const { data = {} } = req.body as { data: Partial<TableData> };
-  const requiredFields: Array<keyof TableData> = ["table_name", "capacity"];
+): Promise<void> {
+  const { data } = req.body;
 
-  for (const field of requiredFields) {
-    if (!data[field]) {
-      return next(new APIError(400, `Table must include a ${field}`));
-    }
+  if (!data) {
+    throw new APIError(400, "Data is required");
   }
 
-  if (typeof data.table_name !== "string" || data.table_name.length < 2) {
-    return next(
-      new APIError(
-        400,
-        "Table must include a table_name with at least 2 characters"
-      )
-    );
+  if (!data.table_name || data.table_name.length < 2) {
+    throw new APIError(400, "table_name must be at least 2 characters");
   }
 
-  if (typeof data.capacity !== "number" || data.capacity < 1) {
-    return next(new APIError(400, "Table must include a valid capacity"));
+  if (!data.capacity || typeof data.capacity !== "number" || data.capacity < 1) {
+    throw new APIError(400, "capacity must be a number greater than 0");
   }
 
+  res.locals.table = data as TableDataWithoutId;
   next();
 }
 
@@ -46,12 +41,11 @@ async function create(
   res: CustomResponse,
   next: NextFunction
 ): Promise<void> {
-  try {
-    const data = await service.create(req.body.data);
-    res.status(201).json({ data: data[0] });
-  } catch (error) {
-    next(error);
+  if (!res.locals.table) {
+    throw new APIError(400, "Table data is required");
   }
+  const data = await service.create(res.locals.table);
+  res.status(201).json({ data: data[0] });
 }
 
 /**
@@ -62,12 +56,33 @@ async function list(
   res: CustomResponse,
   next: NextFunction
 ): Promise<void> {
-  try {
-    const data = await service.list();
-    res.json({ data });
-  } catch (error) {
-    next(error);
+  const data = await service.list();
+  res.json({ data });
+}
+
+/**
+ * Validate reservation seating data
+ */
+async function validateSeat(
+  req: CustomRequest,
+  res: CustomResponse,
+  next: NextFunction
+): Promise<void> {
+  const { data } = req.body;
+  const { table_id } = req.params;
+
+  if (!data || !data.reservation_id) {
+    throw new APIError(400, "reservation_id is required");
   }
+
+  const table = await service.read(Number(table_id));
+  if (!table) {
+    throw new APIError(404, `Table ${table_id} not found`);
+  }
+
+  res.locals.table = table;
+  res.locals.reservation_id = data.reservation_id;
+  next();
 }
 
 /**
@@ -78,24 +93,19 @@ async function seat(
   res: CustomResponse,
   next: NextFunction
 ): Promise<void> {
-  const { table_id } = req.params;
-  const { data = {} } = req.body as { data: { reservation_id?: number } };
+  const table = res.locals.table;
+  const reservation_id = res.locals.reservation_id;
 
-  if (!data.reservation_id) {
-    return next(new APIError(400, "reservation_id is missing"));
+  if (!table || !table.table_id) {
+    throw new APIError(400, "Invalid table data");
   }
 
-  try {
-    const updatedTable = await service.seat(Number(table_id), data.reservation_id);
-    res.json({ data: updatedTable });
-  } catch (error) {
-    next(
-      new APIError(
-        error instanceof APIError ? error.status : 500,
-        error instanceof Error ? error.message : "An unknown error occurred"
-      )
-    );
+  if (typeof reservation_id !== "number") {
+    throw new APIError(400, "Invalid reservation_id");
   }
+
+  const updatedTable = await service.seat(table.table_id, reservation_id);
+  res.json({ data: updatedTable });
 }
 
 /**
@@ -110,20 +120,45 @@ async function finishTable(
   const table = await service.read(Number(table_id));
 
   if (!table) {
-    return next(new APIError(404, `Table ${table_id} not found`));
+    return next({
+      status: 404,
+      message: `Table ${table_id} not found`,
+    });
   }
 
   if (!table.reservation_id) {
-    return next(new APIError(400, `Table ${table_id} is not occupied`));
+    return next({
+      status: 400,
+      message: `Table ${table_id} is not occupied`,
+    });
   }
 
   const updatedTable = await service.finish(Number(table_id));
   res.status(200).json({ data: updatedTable });
 }
 
+/**
+ * Read a specific table
+ */
+async function read(
+  req: CustomRequest,
+  res: CustomResponse,
+  next: NextFunction
+): Promise<void> {
+  const { table_id } = req.params;
+  const table = await service.read(Number(table_id));
+  
+  if (!table) {
+    throw new APIError(404, `Table ${table_id} not found`);
+  }
+  
+  res.json({ data: table });
+}
+
 export const tablesController = {
-  create: [validateTableData, asyncErrorBoundary(create)],
+  create: [asyncErrorBoundary(validateTableData), asyncErrorBoundary(create)],
   list: asyncErrorBoundary(list),
-  seat: asyncErrorBoundary(seat),
+  read: asyncErrorBoundary(read),
+  seat: [asyncErrorBoundary(validateSeat), asyncErrorBoundary(seat)],
   finish: asyncErrorBoundary(finishTable),
 };

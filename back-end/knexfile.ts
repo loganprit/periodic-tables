@@ -4,29 +4,14 @@ import { Knex } from "knex";
 
 dotenv.config();
 
-/**
- * Environment variables interface for type safety
- */
-interface EnvVariables {
-  DATABASE_URL?: string;
-  DATABASE_URL_DEVELOPMENT?: string;
-  DATABASE_URL_TEST?: string;
-  DATABASE_URL_PREVIEW?: string;
-  DEBUG?: string;
-}
-
-/**
- * Type-safe environment variables
- */
-const env: EnvVariables = process.env;
-
+// Destructure directly from process.env
 const {
   DATABASE_URL,
   DATABASE_URL_DEVELOPMENT,
   DATABASE_URL_TEST,
   DATABASE_URL_PREVIEW,
   DEBUG,
-} = env;
+} = process.env;
 
 /**
  * SSL configuration for database connections
@@ -45,7 +30,7 @@ const baseConfig: Partial<Knex.Config> = {
   seeds: {
     directory: path.join(__dirname, "src", "db", "seeds"),
   },
-  debug: !!DEBUG,
+  debug: DEBUG === "true",
 };
 
 /**

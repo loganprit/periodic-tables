@@ -10,6 +10,7 @@ const router: Router = Router();
 router.route("/").get(tablesController.list).post(tablesController.create);
 
 // Routes for specific table operations
+router.route("/:table_id").get(tablesController.read);
 router.route("/:table_id/seat").put(tablesController.seat);
 
 // Route for finishing a table reservation

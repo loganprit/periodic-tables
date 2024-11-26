@@ -15,6 +15,7 @@ export interface CustomResponse extends Response {
   locals: {
     reservation?: ReservationData;
     table?: TableData;
+    reservation_id?: number;
   };
 }
 

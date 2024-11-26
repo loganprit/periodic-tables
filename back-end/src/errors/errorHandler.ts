@@ -10,13 +10,18 @@ import { NextFunction } from "express";
  * @param next - Express next function
  */
 const errorHandler: ErrorHandlerFunction = (
-  error: APIError,
+  error: APIError | Error,
   request: CustomRequest,
   response: CustomResponse,
   next: NextFunction
 ): void => {
-  const { status = 500, message = "Something went wrong!" } = error;
-  response.status(status).json({ error: message });
+  const status = error instanceof APIError ? error.status : 500;
+  const message = error.message || "Something went wrong!";
+  
+  response.status(status).json({
+    error: message,
+    status,
+  });
 };
 
 export default errorHandler;

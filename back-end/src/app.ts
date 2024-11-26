@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import express, { Application } from "express";
 import cors from "cors";
 import { AppConfig } from "./types/config";
-import { CustomRequest, CustomResponse } from "./types/application";
-
+// import { CustomRequest, CustomResponse } from "./types/application";
+import { validateEnv } from "./utils/validateEnv";
 import errorHandler from "./errors/errorHandler";
 import notFound from "./errors/notFound";
 import reservationsRouter from "./reservations/reservations.router";
@@ -13,17 +13,20 @@ import tablesRouter from "./tables/tables.router";
 // Configure environment variables
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
+// Validate environment variables before proceeding
+validateEnv();
+
 // Create Express application
 const app: Application = express();
 
 // Configure application settings
 const config: AppConfig = {
-  port: parseInt(process.env.PORT, 10) || 5000,
-  environment: process.env.NODE_ENV || "development",
+  port: parseInt(process.env.PORT ?? "5000", 10),
+  environment: process.env.NODE_ENV ?? "development",
   database: {
     client: "postgresql",
     connection: {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: process.env.DATABASE_URL ?? "",
       ssl: {
         rejectUnauthorized: false,
       },
