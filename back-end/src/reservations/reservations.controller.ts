@@ -73,17 +73,11 @@ async function validateStatus(
   const validStatuses = ["booked", "seated", "finished", "cancelled"];
   
   if (!validStatuses.includes(status)) {
-    return next({
-      status: 400,
-      message: `Invalid status: ${status}`,
-    } as APIError);
+    return next(new APIError(400, `Invalid status: ${status}`));
   }
 
-  if (status !== "booked") {
-    return next({
-      status: 400,
-      message: "New reservations must have a status of 'booked'",
-    } as APIError);
+  if (req.method === "POST" && status !== "booked") {
+    return next(new APIError(400, `Status '${status}' is not valid for new reservations`));
   }
 
   next();
@@ -122,7 +116,10 @@ async function list(
 
   try {
     const data = await service.list(date, mobile_number);
-    res.json({ data });
+    const filteredData = date 
+      ? data.filter(reservation => reservation.status !== "finished")
+      : data;
+    res.json({ data: filteredData });
   } catch (error) {
     next(error);
   }
@@ -182,26 +179,18 @@ async function updateStatus(
   const { status } = req.body.data as { status: ReservationData["status"] };
 
   if (!status || !["booked", "seated", "finished", "cancelled"].includes(status)) {
-    next({ status: 400, message: `Status ${status} is not valid` } as APIError);
-    return;
+    return next(new APIError(400, `Status '${status}' is not valid`));
   }
 
   try {
     const currentReservation = await service.read(Number(reservation_id));
+    
     if (!currentReservation) {
-      next({
-        status: 404,
-        message: `Reservation ${reservation_id} not found`,
-      } as APIError);
-      return;
+      return next(new APIError(404, `Reservation ${reservation_id} not found`));
     }
 
     if (currentReservation.status === "finished") {
-      next({
-        status: 400,
-        message: "A finished reservation cannot be updated",
-      } as APIError);
-      return;
+      return next(new APIError(400, "A finished reservation cannot be updated"));
     }
 
     const updatedData = await service.updateStatus(Number(reservation_id), status);
@@ -244,31 +233,26 @@ async function update(
   const { data } = req.body as { data: ReservationData };
 
   try {
+    // First check if reservation exists
     const currentReservation = await service.read(Number(reservation_id));
+    
     if (!currentReservation) {
-      next({
-        status: 404,
-        message: `Reservation ${reservation_id} not found`,
-      } as APIError);
-      return;
+      throw new APIError(404, `Reservation ${reservation_id} not found`);
     }
 
-    if (currentReservation.status !== "booked") {
-      next({
-        status: 400,
-        message: "Only booked reservations can be edited",
-      } as APIError);
-      return;
+    // Check if the reservation is finished
+    if (currentReservation.status === "finished") {
+      throw new APIError(400, "A finished reservation cannot be updated");
     }
 
-    const updatedReservation = { ...currentReservation, ...data };
-    const updatedData = await service.update(
-      Number(reservation_id),
-      updatedReservation
-    );
+    const updatedData = await service.update(Number(reservation_id), data);
     res.json({ data: updatedData[0] });
   } catch (error) {
-    next(error);
+    if (error instanceof APIError) {
+      next(error);
+    } else {
+      next(new APIError(500, "An unexpected error occurred"));
+    }
   }
 }
 

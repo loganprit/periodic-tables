@@ -12,10 +12,11 @@ async function create(reservation: ReservationData): Promise<ReservationData> {
       throw new Error("Reservation data is required");
     }
 
-    // Format the date and time values for PostgreSQL
+    // Format the date and time values for PostgreSQL in UTC
+    const date = new Date(reservation.reservation_date);
     const formattedReservation = {
       ...reservation,
-      reservation_date: new Date(reservation.reservation_date).toISOString().split('T')[0],
+      reservation_date: date.toISOString().split("T")[0],
       status: reservation.status || "booked",
     };
 
@@ -71,15 +72,24 @@ async function create(reservation: ReservationData): Promise<ReservationData> {
 /**
  * Lists reservations by date or mobile number
  */
-function list(date?: string, mobile_number?: string): Promise<ReservationData[]> {
-  if (mobile_number) {
-    return search(mobile_number);
+async function list(date?: string, mobile_number?: string): Promise<ReservationData[]> {
+  const query = knex("reservations").select("*");
+  
+  if (date) {
+    // Convert date to UTC before querying
+    const utcDate = new Date(date).toISOString().split("T")[0];
+    query.whereRaw("DATE(reservation_date AT TIME ZONE 'UTC') = ?", [utcDate])
+         .whereNot("status", "finished");
   }
-  return knex("reservations")
-    .select("*")
-    .where({ reservation_date: date })
-    .andWhereNot({ status: "finished" })
-    .orderBy("reservation_time");
+  
+  if (mobile_number) {
+    query.whereRaw(
+      "mobile_number like ?",
+      `%${mobile_number.replace(/\D/g, "")}%`
+    );
+  }
+  
+  return query.orderBy("reservation_time", "asc");
 }
 
 /**
@@ -165,14 +175,49 @@ function search(mobile_number: string): Promise<ReservationData[]> {
 
 /**
  * Updates a reservation
+ * @param reservation_id - The ID of the reservation to update
+ * @param updatedReservation - The updated reservation data
+ * @returns Promise<ReservationData[]>
+ * @throws Error if reservation not found
  */
-function update(
+async function update(
   reservation_id: number,
   updatedReservation: ReservationData
 ): Promise<ReservationData[]> {
-  return knex("reservations")
-    .where({ reservation_id })
-    .update(updatedReservation, "*");
+  try {
+    // First check if reservation exists
+    const existingReservation = await knex("reservations")
+      .where({ reservation_id })
+      .first();
+
+    if (!existingReservation) {
+      throw new Error(`Reservation ${reservation_id} not found`);
+    }
+
+    // Format the date for PostgreSQL in UTC
+    const date = new Date(updatedReservation.reservation_date);
+    const formattedReservation = {
+      ...updatedReservation,
+      reservation_date: date.toISOString().split("T")[0],
+    };
+
+    // Perform the update within a transaction
+    return knex.transaction(async (trx) => {
+      const updated = await trx("reservations")
+        .where({ reservation_id })
+        .update(formattedReservation)
+        .returning("*");
+
+      if (!updated.length) {
+        throw new Error(`Failed to update reservation ${reservation_id}`);
+      }
+
+      return updated;
+    });
+  } catch (error) {
+    // Re-throw the error to be handled by the controller
+    throw error;
+  }
 }
 
 export const reservationsService = {

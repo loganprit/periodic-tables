@@ -18,15 +18,18 @@ async function validateTableData(
   const { data } = req.body;
 
   if (!data) {
-    throw new APIError(400, "Data is required");
+    next(new APIError(400, "Data is required"));
+    return;
   }
 
   if (!data.table_name || data.table_name.length < 2) {
-    throw new APIError(400, "table_name must be at least 2 characters");
+    next(new APIError(400, "table_name must be at least 2 characters"));
+    return;
   }
 
   if (!data.capacity || typeof data.capacity !== "number" || data.capacity < 1) {
-    throw new APIError(400, "capacity must be a number greater than 0");
+    next(new APIError(400, "capacity must be a number greater than 0"));
+    return;
   }
 
   res.locals.table = data as TableDataWithoutId;
@@ -72,12 +75,20 @@ async function validateSeat(
   const { table_id } = req.params;
 
   if (!data || !data.reservation_id) {
-    throw new APIError(400, "reservation_id is required");
+    next(new APIError(400, "reservation_id is required"));
+    return;
   }
 
   const table = await service.read(Number(table_id));
   if (!table) {
-    throw new APIError(404, `Table ${table_id} not found`);
+    next(new APIError(404, `Table ${table_id} not found`));
+    return;
+  }
+
+  const reservation = await service.validateReservation(data.reservation_id);
+  if (!reservation) {
+    next(new APIError(404, `Reservation ${data.reservation_id} not found`));
+    return;
   }
 
   res.locals.table = table;
@@ -120,17 +131,11 @@ async function finishTable(
   const table = await service.read(Number(table_id));
 
   if (!table) {
-    return next({
-      status: 404,
-      message: `Table ${table_id} not found`,
-    });
+    throw new APIError(404, `Table ${table_id} not found`);
   }
 
   if (!table.reservation_id) {
-    return next({
-      status: 400,
-      message: `Table ${table_id} is not occupied`,
-    });
+    throw new APIError(400, `Table ${table_id} is not occupied`);
   }
 
   const updatedTable = await service.finish(Number(table_id));

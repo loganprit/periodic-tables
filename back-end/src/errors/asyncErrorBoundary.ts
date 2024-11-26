@@ -1,6 +1,7 @@
 import { AsyncErrorBoundaryFunction, AsyncDelegate } from "../types/errors";
 import { CustomRequest, CustomResponse } from "../types/application";
 import { NextFunction } from "express";
+import { APIError } from "../types/errors";
 
 /**
  * Higher-order function that wraps async route handlers to catch errors
@@ -20,12 +21,18 @@ const asyncErrorBoundary: AsyncErrorBoundaryFunction = (
     Promise.resolve()
       .then(() => delegate(request, response, next))
       .catch((error: Error | unknown = {}) => {
-        const errorObj = error as { status?: number; message?: string };
-        const { status = defaultStatus, message = String(error) } = errorObj;
-        next({
-          status,
-          message,
-        });
+        if (error instanceof APIError) {
+          next(error);
+        } else {
+          const { status = defaultStatus, message = String(error) } = error as {
+            status?: number;
+            message?: string;
+          };
+          next({
+            status,
+            message,
+          });
+        }
       });
   };
 };

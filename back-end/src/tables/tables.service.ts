@@ -107,10 +107,20 @@ async function finish(table_id: number): Promise<TableData> {
   });
 }
 
+/**
+ * Validates a reservation by ID
+ * @param reservation_id - The ID of the reservation to validate
+ * @returns Promise resolving to the reservation data or null if not found
+ */
+async function validateReservation(reservation_id: number): Promise<ReservationData | null> {
+  return knex("reservations").where({ reservation_id }).first();
+}
+
 export const tablesService = {
   create,
   list,
   seat,
   read,
   finish,
+  validateReservation,
 };

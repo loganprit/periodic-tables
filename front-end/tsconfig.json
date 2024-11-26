@@ -34,7 +34,12 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    "types": ["jest", "@testing-library/jest-dom", "node"]
+    "types": [
+      "jest",
+      "@testing-library/jest-dom",
+      "node",
+      "expect-puppeteer"
+    ]
   },
   "include": ["src", "e2e/setupTests.ts"],
   "exclude": ["node_modules", "build"]

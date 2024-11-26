@@ -23,7 +23,6 @@ const ssl = { rejectUnauthorized: false };
  */
 const baseConfig: Partial<Knex.Config> = {
   client: "postgresql",
-  pool: { min: 1, max: 5 },
   migrations: {
     directory: path.join(__dirname, "src", "db", "migrations"),
   },
@@ -31,6 +30,21 @@ const baseConfig: Partial<Knex.Config> = {
     directory: path.join(__dirname, "src", "db", "seeds"),
   },
   debug: DEBUG === "true",
+  pool: {
+    min: 1,
+    max: 5,
+    afterCreate: (conn: any, done: Function) => {
+      // Set timezone handling
+      conn.query(`
+        SET timezone TO 'UTC';
+        SET datestyle TO 'ISO, YMD';
+        SET intervalstyle TO 'postgres';
+      `, (err: Error) => {
+        done(err, conn);
+      });
+    }
+  },
+  useNullAsDefault: true
 };
 
 /**
