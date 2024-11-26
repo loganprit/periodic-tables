@@ -1,8 +1,8 @@
-const puppeteer = require("puppeteer");
-const { setDefaultOptions } = require('expect-puppeteer');
-const fs = require("fs");
+import puppeteer from "puppeteer";
+import { setDefaultOptions } from 'expect-puppeteer';
+import fs from "fs";
 const fsPromises = fs.promises;
-
+import { describe, test, expect, beforeAll, beforeEach, afterAll } from "@jest/globals";
 const { containsText } = require("./utils");
 const { createReservation, createTable, seatReservation } = require("./api");
 

@@ -19,16 +19,16 @@
     "@testing-library/user-event": "^14.5.2",
     "axios": "^1.6.7",
     "node-fetch": "^3.3.2",
+    "nth-check": "^2.1.1",
     "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.22.3",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
+    "svgo": "^3.2.0",
     "web-vitals": "^3.5.2",
-    "ws": "^8.16.0",
-    "nth-check": "^2.1.1",
-    "svgo": "^3.2.0"
+    "ws": "^8.16.0"
   },
   "scripts": {
     "build": "react-scripts build",
@@ -69,7 +69,7 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.11.24",
     "@types/puppeteer": "^7.0.4",
     "@types/react": "^18.2.61",

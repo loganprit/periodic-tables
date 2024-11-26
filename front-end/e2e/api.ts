@@ -1,4 +1,5 @@
-const fetch = require("cross-fetch");
+import fetch from "cross-fetch";
+import { Reservation, Table, APIOptions } from "./types";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:5001";
@@ -10,25 +11,17 @@ const headers = { "Content-Type": "application/json" };
 
 /**
  * Fetch `json` from the specified URL and handle error status codes and ignore `AbortError`s
- *
- * This function is NOT exported because it is not needed outside of this file.
- *
- * @param url
- *  the url for the requst.
- * @param options
- *  any options for fetch
- * @param onCancel
- *  value to return if fetch call is aborted. Default value is undefined.
- * @returns {Promise<Error|any>}
- *  a promise that resolves to the `json` data or an error.
- *  If the response is not in the 200 - 399 range the promise is rejected.
  */
-async function fetchJson(url, options, onCancel) {
+async function fetchJson<T>(
+  url: string,
+  options: RequestInit,
+  onCancel?: T
+): Promise<T> {
   try {
     const response = await fetch(url, options);
 
     if (response.status === 204) {
-      return null;
+      return onCancel as T;
     }
 
     const payload = await response.json();
@@ -37,58 +30,66 @@ async function fetchJson(url, options, onCancel) {
       return Promise.reject({ message: payload.error });
     }
     return payload.data;
-  } catch (error) {
+  } catch (error: any) {
     if (error.name !== "AbortError") {
       console.error(error.stack);
       throw error;
     }
-    return Promise.resolve(onCancel);
+    return onCancel as T;
   }
 }
 
 /**
  * Creates a new reservation
- * @returns {Promise<[reservation]>}
- *  a promise that resolves to the newly created reservation.
  */
-async function createReservation(reservation, signal) {
+async function createReservation(
+  reservation: Reservation,
+  options: APIOptions = {}
+): Promise<Reservation> {
   const url = `${API_BASE_URL}/reservations`;
-  const options = {
+  const fetchOptions = {
     method: "POST",
     headers,
     body: JSON.stringify({ data: reservation }),
-    signal,
+    signal: options.signal,
   };
-  return await fetchJson(url, options, reservation);
+  return await fetchJson<Reservation>(url, fetchOptions, reservation);
 }
 
 /**
  * Creates a new table
- * @returns {Promise<[table]>}
- *  a promise that resolves to the newly created table.
  */
-async function createTable(table, signal) {
+async function createTable(
+  table: Table,
+  options: APIOptions = {}
+): Promise<Table> {
   const url = `${API_BASE_URL}/tables`;
-  const options = {
+  const fetchOptions = {
     method: "POST",
     headers,
     body: JSON.stringify({ data: table }),
-    signal,
+    signal: options.signal,
   };
-  return await fetchJson(url, options, table);
+  return await fetchJson<Table>(url, fetchOptions, table);
 }
 
-async function seatReservation(reservation_id, table_id) {
+/**
+ * Seats a reservation at a table
+ */
+async function seatReservation(
+  reservation_id: number,
+  table_id: number
+): Promise<Record<string, never>> {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
   const options = {
     method: "PUT",
     body: JSON.stringify({ data: { reservation_id } }),
     headers,
   };
-  return await fetchJson(url, options, {});
+  return await fetchJson<Record<string, never>>(url, options, {});
 }
 
-module.exports = {
+export {
   createReservation,
   createTable,
   seatReservation,
