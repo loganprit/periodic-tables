@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useSpring, animated } from "react-spring";
+import { useSpring, animated } from "@react-spring/web";
 
 /**
  * Interface defining props for Menu component
@@ -24,8 +24,8 @@ function Menu({ isHomePage }: MenuProps): JSX.Element {
   ];
 
   const menuAnimation = useSpring({
-    opacity: 1,
-    transform: "translateY(0%)",
+    from: { opacity: 0, transform: "translateY(-20%)" },
+    to: { opacity: 1, transform: "translateY(0%)" },
     config: { mass: 1, tension: 180, friction: 12 },
   });
 

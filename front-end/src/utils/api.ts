@@ -3,7 +3,7 @@ import formatReservationDate from "./format-reservation-date";
 import formatReservationTime from "./format-reservation-time";
 
 const API_BASE_URL =
-  process.env["REACT_APP_API_BASE_URL"] || "http://localhost:5001";
+  (window as any).env?.REACT_APP_API_BASE_URL || "http://localhost:5001";
 const axiosInstance = axios.create({ baseURL: API_BASE_URL });
 
 /**

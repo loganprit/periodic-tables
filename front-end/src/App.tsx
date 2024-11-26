@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "./dashboard/Dashboard";
 import Layout from "./layout/Layout";
 import ReservationForm from "./reservations/ReservationForm";
@@ -7,19 +7,17 @@ import NotFound from "./layout/NotFound";
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/reservations/new" element={<ReservationForm />} />
-          <Route 
-            path="/reservations" 
-            element={<ReservationList loadOnMount={true} />} 
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/reservations/new" element={<ReservationForm />} />
+        <Route 
+          path="/reservations" 
+          element={<ReservationList loadOnMount={true} />} 
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
   );
 }
 
