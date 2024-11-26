@@ -9,6 +9,7 @@ import {
   validateReservationDate,
 } from "../utils/dateValidation";
 import { validateReservationTime } from "../utils/timeValidation";
+import { DateValidationError } from "../types/validation";
 
 /**
  * Validates that the request body contains all required fields
@@ -282,33 +283,21 @@ async function validateDateTime(
   const { reservation_date, reservation_time } = req.body.data;
 
   if (!isValidDate(reservation_date)) {
-    return next({
-      status: 400,
-      message: "Invalid reservation_date format. Use YYYY-MM-DD",
-    } as APIError);
+    return next(new APIError(400, DateValidationError.INVALID_DATE));
   }
 
   if (!isValidTime(reservation_time)) {
-    return next({
-      status: 400,
-      message: "Invalid reservation_time format. Use HH:MM (24-hour)",
-    } as APIError);
+    return next(new APIError(400, DateValidationError.INVALID_TIME));
   }
 
   const dateError = validateReservationDate(reservation_date);
   if (dateError) {
-    return next({
-      status: 400,
-      message: dateError,
-    } as APIError);
+    return next(new APIError(400, dateError));
   }
 
   const timeError = validateReservationTime(reservation_date, reservation_time);
   if (timeError) {
-    return next({
-      status: 400,
-      message: timeError,
-    } as APIError);
+    return next(new APIError(400, timeError));
   }
 
   next();

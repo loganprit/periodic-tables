@@ -19,7 +19,9 @@ export const TIME_REGEX = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
  */
 export enum DateValidationError {
   PAST_DATE = "Reservation must be for a future date",
-  CLOSED_DAY = "Restaurant is closed on Tuesdays"
+  CLOSED_DAY = "Restaurant is closed on Tuesdays",
+  INVALID_DATE = "Invalid reservation_date format",
+  INVALID_TIME = "Invalid reservation_time format"
 }
 
 /**
