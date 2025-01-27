@@ -22,15 +22,43 @@ describe("US-01 - Create and list reservations - E2E", () => {
   });
 
   beforeEach(async () => {
-    browser = await puppeteer.launch({
-      executablePath: require("puppeteer").executablePath(),
-      headless: true,
-    });
+    browser = await puppeteer.launch();
     const newPage = await browser.newPage();
     page = newPage as unknown as Page;
     page.on("console", onPageConsole);
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.goto(`${baseURL}/reservations/new`, { waitUntil: "networkidle0" });
+    
+    // Add debug logging
+    page.on("console", msg => {
+      console.log(`PAGE LOG: ${msg.type()}: ${msg.text()}`);
+    });
+
+    // Navigate to the page and wait for the app to be ready
+    await page.goto(`${baseURL}/reservations/new`);
+    
+    // Wait for React to be ready
+    await page.waitForFunction(() => {
+      const root = document.querySelector('#root');
+      return window.hasOwnProperty('React') && 
+             window.hasOwnProperty('ReactDOM') && 
+             root !== null && 
+             root.children.length > 0;
+    }, { timeout: 10000 });
+    
+    // Now wait for specific elements
+    try {
+      await page.waitForSelector("form", { 
+        timeout: 5000,
+        visible: true 
+      });
+    } catch (error) {
+      // Take a screenshot if form isn't found
+      await page.screenshot({
+        path: ".screenshots/form-not-found-error.png",
+        fullPage: true,
+      });
+      throw error;
+    }
   });
 
   afterEach(async () => {
@@ -67,17 +95,14 @@ describe("US-01 - Create and list reservations - E2E", () => {
     });
 
     test("canceling form returns to previous page", async () => {
-      await page.goto(`${baseURL}/dashboard`, { waitUntil: "networkidle0" });
-      await page.goto(`${baseURL}/reservations/new`, {
-        waitUntil: "networkidle0",
-      });
-
-      const [cancelButton] = await page.$$(
-        "//button[contains(translate(., 'ACDEFGHIJKLMNOPQRSTUVWXYZ', 'acdefghijklmnopqrstuvwxyz'), 'cancel')]"
+      // Wait for the cancel button to be present
+      const cancelButton = await page.waitForSelector(
+        'button[type="button"][name="cancel"]', 
+        { visible: true }
       );
 
       if (!cancelButton) {
-        throw new Error("button containing cancel not found.");
+        throw new Error("Cancel button not found");
       }
 
       await page.screenshot({

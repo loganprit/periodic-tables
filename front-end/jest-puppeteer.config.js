@@ -1,9 +1,18 @@
 module.exports = {
   launch: {
     headless: "new",
-    slowMo: process.env.SLOWMO ? parseInt(process.env.SLOWMO) : 0,
-    devtools: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--window-size=1920,1080",
+    ],
+    defaultViewport: {
+      width: 1920,
+      height: 1080,
+    },
+    timeout: 30000,
   },
   browserContext: "default",
 };
