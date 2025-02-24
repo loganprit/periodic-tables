@@ -26,7 +26,7 @@ This is the backend for the Restaurant Reservation System, a capstone project fo
    ```
 3. Install dependencies:
    ```bash
-   npm install
+   pnpm install
    ```
 
 ## Environment Variables
@@ -61,7 +61,7 @@ knex seed:run
 Start the application:
 
 ```bash
-npm start
+pnpm start
 ```
 
 The server will start on port 5000 by default.

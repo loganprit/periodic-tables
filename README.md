@@ -63,7 +63,7 @@ For detailed API documentation, please refer to the respective backend and front
 
 1. Clone the repository: `git clone https://github.com/loganprit/periodic-tables/tree/main`
 2. Navigate to the backend directory: `cd back-end`
-3. Install dependencies: `npm install`
+3. Install dependencies: `pnpm install`
 4. Set up environment variables in a `.env` file (use `.env.sample` as a reference)
 5. Run the migrations: `knex migrate:latest`
 6. Seed the database: `knex seed:run`
@@ -71,11 +71,11 @@ For detailed API documentation, please refer to the respective backend and front
 ### Frontend
 
 1. Navigate to the frontend directory: `cd front-end`
-2. Install dependencies: `npm install`
+2. Install dependencies: `pnpm install`
 
 ### Start the Application
 
-1. Start the application from the home directory: `npm start`
+1. Start the application from the home directory: `pnpm start`
 
 ## Additional Notes
 

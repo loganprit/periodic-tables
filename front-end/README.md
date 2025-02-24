@@ -25,14 +25,14 @@ This is the frontend application for the Periodic Tables project, a restaurant r
 3. Install the dependencies:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 4. Create a `.env` file and set the `REACT_APP_API_BASE_URL` to point to your backend API.
 
 5. Start the development server:
    ```bash
-   npm start
+   pnpm start
    ```
 
 ## Usage
