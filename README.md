@@ -1,9 +1,5 @@
 # Periodic Tables
 
-## Live Application
-
-[Link to live application](https://restaurant-reservation-frontend-v5ci.onrender.com/)
-
 ## Summary
 
 Periodic Tables is a restaurant reservation system designed to manage reservations and table assignments for fine dining restaurants. Users can create, update, and cancel reservations, as well as assign reservations to tables. The application ensures that reservation times and dates are validated for availability and correctness.
@@ -55,7 +51,6 @@ For detailed API documentation, please refer to the respective backend and front
 - **Frontend**: React, CSS
 - **Backend**: Node.js, Express.js, Knex.js
 - **Database**: PostgreSQL
-- **Deployment**: Render
 
 ## Installation Instructions
 
